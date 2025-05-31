@@ -7,88 +7,171 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* Import Inter font from Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f1f5f9; /* Light gray background */
+            margin: 0;
+            overflow: hidden; /* Prevent scrollbars if background image is larger than viewport */
+        }
+        
+        /* Full-screen background image container */
+        .bg-image {
+            position: fixed; /* Fixes the background image to the viewport */
+            top: 0;
+            left: 0;
+            width: 100%;
+             object-fit: cover;
+             
+            height: 100%;
+            /* Using a placeholder image. Replace with your actual dark abstract background image. */
+            background-image: url('img/bg-img.jpg'); 
+            background-size: cover; /* Ensures the image covers the entire element */
+            background-position: center; /* Centers the image */
+            z-index: -1; /* Puts the background image behind other content */
+            filter: brightness(0.7); /* Slightly darken the background for better text contrast */
+        }
+        
+        /* Styling for the transparent login form container */
+        .transparent-form {
+            background-color: rgba(0, 0, 0, 0.7); /* Slightly transparent white */
+            backdrop-filter: blur(10px); /* Applies a blur effect to content behind the form */
+            -webkit-backdrop-filter: blur(10px); /* Safari support */
+            padding: 2rem;
+            border-radius: 1rem; /* Rounded corners for the form box */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Soft shadow */
+            border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle light border */
+        }
+        
+        /* Text color for labels inside the transparent form */
+        .transparent-form label {
+            color: #f3f4f6; /* Light gray text for labels */
+        }
+        
+        /* Styling for input fields inside the transparent form */
+        .transparent-form input {
+            background-color: rgba(255, 255, 255, 0.2); /* Transparent white background for inputs */
+            border: 1px solid rgba(255, 255, 255, 0.3); /* Slightly more opaque border */
+            color: #f3f4f6; /* Light text color for input values */
+        }
+        
+        /* Placeholder text color for input fields */
+        .transparent-form input::placeholder {
+            color: #d1d5db; /* Lighter gray for placeholders */
+        }
+        
+        /* Styling for the submit button */
+        .transparent-form button[type="submit"] {
+            background-color: rgba(220, 38, 38, 0.7); /* Slightly transparent red */
+            color: #f3f4f6; /* Light text color */
+        }
+        
+        /* Hover effect for the submit button */
+        .transparent-form button[type="submit"]:hover {
+            background-color: rgba(220, 38, 38, 0.8); /* Darker red on hover */
+        }
+        
+        /* Styling for links (e.g., "Register here") */
+        .transparent-form a {
+            color: #f472b6; /* Pink accent color for links */
+        }
+        
+        /* Hover effect for links */
+        .transparent-form a:hover {
+            color: #ec4899; /* Darker pink on hover */
+        }
+
+        /* Styling for the back button (top-left) */
+        .back-button {
+            background-color: rgba(220, 38, 38, 0.7); /* Slightly transparent red */
+            color: #f3f4f6; /* Light text/icon color */
+        }
+        
+        /* Hover effect for the back button */
+        .back-button:hover {
+            background-color: rgba(220, 38, 38, 0.8); /* Darker red on hover */
         }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-900 font-sans flex items-center justify-center min-h-screen">
+<body class="flex items-center justify-center min-h-screen">
+    <div class="bg-image"></div>
 
-    <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
-
-
-        <div class="w-8 h-8 flex items-center justify-center rounded-full bg-red-600 text-white hover:bg-red-700 transition duration-200">
+    <div class="transparent-form p-8 rounded-lg shadow-xl w-full max-w-md relative z-10">
+        <div class="w-8 h-8 flex items-center justify-center rounded-full back-button transition duration-200 mb-4">
             <a href="index.html" class="text-lg">
                 <i class="fas fa-arrow-left"></i>
             </a>
         </div>
 
-        
-        <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Welcome Back!</h2>
-        <p class="text-center text-gray-600 mb-8">Sign in to track your lost items or help others find theirs.</p>
+        <h2 class="text-3xl font-bold text-center text-white mb-6">Welcome Back!</h2>
+        <p class="text-center text-gray-300 mb-8">Sign in to track your lost items or help others find theirs.</p>
 
         <form id="loginForm" action="php/login.php" method="POST" class="space-y-6">
             <div>
-                <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
+                <label for="email" class="block text-sm font-medium">Email Address</label>
                 <input type="email" id="email" name="email"
-                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                       class="mt-1 block w-full px-4 py-2 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                        placeholder="your.email@umt.edu.pk">
             </div>
             <div>
-                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                <label for="password" class="block text-sm font-medium">Password</label>
                 <input type="password" id="password" name="password"
-                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                       class="mt-1 block w-full px-4 py-2 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                        placeholder="••••••••">
             </div>
             <button type="submit"
-                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-lg font-semibold text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">
+                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">
                 Login
             </button>
         </form>
 
         <div class="mt-6 text-center">
-            <p class="text-sm text-gray-600">Don't have an account? <a href="register.html" class="font-medium text-red-600 hover:text-red-500">Register here</a></p>
-            </div>
+            <p class="text-sm text-gray-300">Don't have an account? <a href="register.html" class="font-medium hover:text-red-500">Register here</a></p>
+        </div>
 
         <div id="message" class="mt-4 p-3 text-sm text-center rounded-md hidden"></div>
     </div>
 
     <script>
+        // JavaScript for handling form submission
         document.getElementById('loginForm').addEventListener('submit', async function(event) {
-            event.preventDefault(); // Prevent default form submission
+            event.preventDefault(); // Prevent default form submission to handle it with JavaScript
 
             const form = event.target;
-            const formData = new FormData(form);
-            const messageDiv = document.getElementById('message');
+            const formData = new FormData(form); // Get form data
+            const messageDiv = document.getElementById('message'); // Get message display div
 
             try {
+                // Send form data to the PHP login script
                 const response = await fetch(form.action, {
                     method: 'POST',
                     body: formData
                 });
 
-                const data = await response.json();
+                const data = await response.json(); // Parse the JSON response from the PHP script
 
                 if (data.success) {
+                    // On successful login
                     messageDiv.textContent = data.message;
-                    messageDiv.className = 'mt-4 p-3 text-sm text-center rounded-md bg-green-100 text-green-700';
+                    messageDiv.className = 'mt-4 p-3 text-sm text-center rounded-md bg-green-500 text-white'; // Green background for success
+                    // Redirect to the dashboard after a short delay
                     setTimeout(() => {
-                        window.location.href = data.redirect || 'user_dashboard.html'; // Redirect to index or admin dashboard
-                    }, 1000);
+                        window.location.href = data.redirect || 'user_dashboard.html'; 
+                    }, 1000); // Redirect after 1 second
                 } else {
+                    // On failed login
                     messageDiv.textContent = data.message;
-                    messageDiv.className = 'mt-4 p-3 text-sm text-center rounded-md bg-red-100 text-red-700';
+                    messageDiv.className = 'mt-4 p-3 text-sm text-center rounded-md bg-red-500 text-white'; // Red background for error
                 }
             } catch (error) {
+                // Handle network or other unexpected errors
                 console.error('Error:', error);
                 messageDiv.textContent = 'An error occurred. Please try again.';
-                messageDiv.className = 'mt-4 p-3 text-sm text-center rounded-md bg-red-100 text-red-700';
+                messageDiv.className = 'mt-4 p-3 text-sm text-center rounded-md bg-red-500 text-white'; // Generic error message
             }
-            messageDiv.classList.remove('hidden');
+            messageDiv.classList.remove('hidden'); // Make sure the message div is visible
         });
     </script>
-
-    
 </body>
 </html>

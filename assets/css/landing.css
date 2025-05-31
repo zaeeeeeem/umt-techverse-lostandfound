@@ -10,6 +10,10 @@
     --success: #10b981;
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -115,7 +119,7 @@ header {
 
 #logopic {
     height: 50px;
-    margin-right: 10px;
+    margin-right: 5px;
 }
 
 nav ul {
@@ -124,7 +128,7 @@ nav ul {
 
     list-style: none;
     gap: 30px;
-    margin-right: 8rem;
+    margin-right: 4rem;
 }
 
 

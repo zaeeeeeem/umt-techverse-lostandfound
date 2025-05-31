@@ -6,69 +6,187 @@
     <title>Dashboard - UMT L&F Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         body { font-family: 'Inter', sans-serif; }
+
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #2b2d42; /* Dark background similar to sidebar */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4A4E69; /* Slightly lighter dark for thumb */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6C6F82; /* Even lighter on hover */
+        }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-900 font-sans">
-    <nav class="bg-indigo-600 p-4 shadow-md sticky top-0 z-10">
-        <div class="container mx-auto flex justify-between items-center">
-            <a href="user_dashboard.html" class="text-white text-2xl font-bold tracking-wide">UMT L&F Portal</a>
-            <div class="flex space-x-4 items-center">
-                <a href="lost_items.html" class="text-white hover:text-indigo-100 transition duration-150 py-2 px-3 rounded-md hover:bg-indigo-700">Lost Items</a>
-                <a href="found_items.html" class="text-white hover:text-indigo-100 transition duration-150 py-2 px-3 rounded-md hover:bg-indigo-700">Found Items</a>
-                <a href="post_lost.html" class="bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-2 px-4 rounded-md transition duration-150 shadow-sm">Report Lost</a>
-                <a href="post_found.html" class="bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-2 px-4 rounded-md transition duration-150 shadow-sm">Report Found</a>
-                <span id="userNameDisplay" class="text-white font-medium ml-4"></span>
-                <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md transition duration-150 shadow-sm">Logout</button>
-            </div>
-        </div>
-    </nav>
-    <main class="container mx-auto p-6">
-        <h1 class="text-4xl font-extrabold text-gray-800 mb-8 text-center">My Dashboard</h1>
-
-        <div class="mb-8 text-center">
-            <a href="chat_inbox.html" class="inline-block bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-8 rounded-md shadow-lg text-lg transition duration-150 ease-in-out">
-                Go to My Chats
-            </a>
+<body class="bg-[#1A1C20] text-gray-200 font-sans flex min-h-screen">
+    <aside class="w-64 bg-[#23262A] text-gray-300 shadow-lg p-6 flex flex-col fixed h-full z-20">
+        <div class="text-white text-3xl font-extrabold mb-8 mt-4 text-center">
+            <img src="img/logo-final.png" alt="">
         </div>
         
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div class="bg-white p-6 rounded-lg shadow-xl">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center justify-between">
-                    My Reported Lost Items
-                    <a href="post_lost.html" class="text-sm bg-green-500 hover:bg-green-600 text-white py-1 px-3 rounded-md transition duration-150">Report New Lost</a>
+        <nav class="flex-grow">
+            <ul>
+                <li class="mb-3">
+                    <a href="user_dashboard.html" class="flex items-center p-3 rounded-lg text-white font-semibold bg-indigo-600">
+                        <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
+                        Home
+                    </a>
+                </li>
+                <li class="mb-3">
+                    <a href="lost_items.html" class="flex items-center p-3 rounded-lg hover:bg-gray-700 transition duration-200">
+                        <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"></path></svg>
+                        Lost Items
+                    </a>
+                </li>
+                <li class="mb-3">
+                    <a href="found_items.html" class="flex items-center p-3 rounded-lg hover:bg-gray-700 transition duration-200">
+                        <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"></path></svg>
+                        Found Items
+                    </a>
+                </li>
+                <li class="mb-3">
+                    <a href="post_lost.html" class="flex items-center p-3 rounded-lg hover:bg-gray-700 transition duration-200">
+                        <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20"><path d="M11 3a1 1 0 10-2 0v7a1 1 0 102 0V3zm-3.35 9.65a1 1 0 10-1.4 1.4L8.586 16H6a1 1 0 100 2h10a1 1 0 100-2h-2.586l2.232-2.232a1 1 0 10-1.414-1.414L10 14.586l-2.35-2.35z"></path></svg>
+                        Report Lost
+                    </a>
+                </li>
+                <li class="mb-3">
+                    <a href="post_found.html" class="flex items-center p-3 rounded-lg hover:bg-gray-700 transition duration-200">
+                        <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2a.75.75 0 01.75.75v6.5h6.5a.75.75 0 010 1.5h-6.5v6.5a.75.75 0 01-1.5 0v-6.5h-6.5a.75.75 0 010-1.5h6.5v-6.5A.75.75 0 0110 2z" clip-rule="evenodd"></path></svg>
+                        Report Found
+                    </a>
+                </li>
+                 <li class="mb-3">
+                    <a href="chat_inbox.html" class="flex items-center p-3 rounded-lg hover:bg-gray-700 transition duration-200">
+                        <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.758-1.543c-.337.1-.63.2-.848.243-.167.037-.308.0-.405-.013L2 16.5V14.25a.75.75 0 01.12-.328c.35-.453.6-.976.722-1.523A8.84 8.84 0 012 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7.5 8a.75.75 0 000 1.5h5a.75.75 0 000-1.5h-5z" clip-rule="evenodd"></path></svg>
+                        My Chats
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="mt-auto">
+            <div class="flex items-center justify-between p-3 rounded-lg bg-gray-700">
+                <span id="userNameDisplay" class="text-white font-medium"></span>
+                <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-1 px-3 rounded-md text-sm transition duration-150 shadow-sm">Logout</button>
+            </div>
+        </div>
+    </aside>
+
+    <div class="flex-1 ml-64 p-6 overflow-auto">
+        <!-- <header class="bg-[#2B2E33] rounded-xl p-4 mb-6 shadow-md flex items-center justify-between">
+            <div class="relative w-1/3">
+                <input type="text" placeholder="Search items..." class="w-full pl-10 pr-4 py-2 rounded-lg bg-[#3A3E45] text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="text-gray-400">Last Week</span>
+                <span class="text-white font-medium bg-gray-700 px-3 py-1 rounded-md">Last Month</span>
+                <div class="w-9 h-9 rounded-full bg-indigo-500 flex items-center justify-center text-white font-semibold">U</div>
+            </div>
+        </header> -->
+
+        <h1 class="text-4xl font-extrabold text-white mb-8 text-center">My Dashboard</h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            <div class="bg-[#3A3E45] p-6 rounded-xl shadow-lg text-center flex flex-col items-center justify-center">
+                <h3 class="text-lg font-semibold text-gray-300 mb-2">My Lost Items</h3>
+                <p id="totalMyLostItems" class="text-5xl font-bold text-red-400">0</p>
+                <a href="post_lost.html" class="mt-4 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md text-sm transition duration-150 shadow-sm">Report New</a>
+            </div>
+            <div class="bg-[#3A3E45] p-6 rounded-xl shadow-lg text-center flex flex-col items-center justify-center">
+                <h3 class="text-lg font-semibold text-gray-300 mb-2">My Found Items</h3>
+                <p id="totalMyFoundItems" class="text-5xl font-bold text-green-400">0</p>
+                <a href="post_found.html" class="mt-4 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md text-sm transition duration-150 shadow-sm">Report New</a>
+            </div>
+            <div class="bg-[#3A3E45] p-6 rounded-xl shadow-lg text-center flex flex-col items-center justify-center">
+                <h3 class="text-lg font-semibold text-gray-300 mb-2">My Claim Requests</h3>
+                <p id="totalMyClaimRequests" class="text-5xl font-bold text-blue-400">0</p>
+                <a href="#myClaimRequestsList" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm transition duration-150 shadow-sm">View Details</a>
+            </div>
+            <div class="bg-[#3A3E45] p-6 rounded-xl shadow-lg text-center flex flex-col items-center justify-center">
+                <h3 class="text-lg font-semibold text-gray-300 mb-2">Claims on My Items</h3>
+                <p id="totalClaimsOnMyItems" class="text-5xl font-bold text-purple-400">0</p>
+                <a href="#claimsOnMyItemsList" class="mt-4 bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-md text-sm transition duration-150 shadow-sm">Review Claims</a>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+            <div class="lg:col-span-2 bg-[#42228E] p-6 rounded-xl shadow-lg flex items-center justify-between text-white relative overflow-hidden">
+                <div class="z-10">
+                    <h3 class="text-2xl font-bold mb-2">Lost & Found Rewards!</h3>
+                    <p class="text-lg">Report 5 items this month and get a <span class="font-bold text-yellow-300">"Campus Helper" Badge!</span></p>
+                    <button class="mt-4 bg-yellow-400 text-purple-900 font-semibold py-2 px-6 rounded-md hover:bg-yellow-300 transition duration-150 shadow-md">
+                        Learn More
+                    </button>
+                </div>
+                <div class="absolute right-0 bottom-0 opacity-20">
+                    <img src="https://www.svgrepo.com/show/472656/gift.svg" alt="Gift Icon" class="w-32 h-32 transform rotate-12">
+                </div>
+                <div class="absolute top-0 right-1/4 opacity-10">
+                    <img src="https://www.svgrepo.com/show/472659/star.svg" alt="Star Icon" class="w-24 h-24">
+                </div>
+            </div>
+
+            <div class="bg-[#3A3E45] p-6 rounded-xl shadow-lg text-center flex flex-col items-center justify-center">
+                <h3 class="text-lg font-semibold text-gray-300 mb-4">Item Resolution Rate</h3>
+                <div class="relative w-32 h-32 flex items-center justify-center">
+                    <svg class="w-full h-full" viewBox="0 0 100 100">
+                        <circle class="text-gray-700" stroke-width="10" stroke="currentColor" fill="transparent" r="40" cx="50" cy="50"></circle>
+                        <circle class="text-indigo-500" stroke-width="10" stroke-dasharray="251.2" stroke-dashoffset="50.24" stroke-linecap="round" stroke="currentColor" fill="transparent" r="40" cx="50" cy="50"></circle>
+                    </svg>
+                    <span class="absolute text-3xl font-bold text-white">80%</span>
+                </div>
+                <p class="text-sm text-gray-400 mt-4">Average Resolution</p>
+                <a href="#" class="text-indigo-400 hover:underline text-sm mt-2">Overview ></a>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-[#2B2E33] p-6 rounded-xl shadow-lg">
+                <h2 class="text-2xl font-bold text-white mb-4 flex items-center justify-between">
+                    Recently Reported Lost
+                    <a href="post_lost.html" class="text-sm bg-indigo-600 hover:bg-indigo-700 text-white py-1 px-3 rounded-md transition duration-150 shadow-sm">Report New</a>
                 </h2>
                 <div id="myLostItemsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <p id="noMyLostItems" class="col-span-full text-center text-gray-600 hidden">You haven't reported any lost items yet.</p>
-                    </div>
+                    <p id="noMyLostItems" class="col-span-full text-center text-gray-500 hidden">You haven't reported any lost items yet.</p>
+                </div>
             </div>
 
-            <div class="bg-white p-6 rounded-lg shadow-xl">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center justify-between">
-                    My Reported Found Items
-                    <a href="post_found.html" class="text-sm bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded-md transition duration-150">Report New Found</a>
+            <div class="bg-[#2B2E33] p-6 rounded-xl shadow-lg">
+                <h2 class="text-2xl font-bold text-white mb-4 flex items-center justify-between">
+                    Recently Reported Found
+                    <a href="post_found.html" class="text-sm bg-indigo-600 hover:bg-indigo-700 text-white py-1 px-3 rounded-md transition duration-150 shadow-sm">Report New</a>
                 </h2>
                 <div id="myFoundItemsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <p id="noMyFoundItems" class="col-span-full text-center text-gray-600 hidden">You haven't reported any found items yet.</p>
-                    </div>
+                    <p id="noMyFoundItems" class="col-span-full text-center text-gray-500 hidden">You haven't reported any found items yet.</p>
+                </div>
             </div>
         </div>
 
-        <div class="mt-8 bg-white p-6 rounded-lg shadow-xl">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">My Claim Requests</h2>
-                <div id="myClaimRequestsList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <p id="noMyClaimRequests" class="col-span-full text-center text-gray-600 hidden">You haven't made any claim requests yet.</p>
-                    </div>
+        <div class="mt-6 bg-[#2B2E33] p-6 rounded-xl shadow-lg">
+            <h2 class="text-2xl font-bold text-white mb-4">My Claim Requests</h2>
+            <div id="myClaimRequestsList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <p id="noMyClaimRequests" class="col-span-full text-center text-gray-500 hidden">You haven't made any claim requests yet.</p>
             </div>
-
-            <div class="mt-8 bg-white p-6 rounded-lg shadow-xl">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">Claims on My Items</h2>
-                <div id="claimsOnMyItemsList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <p id="noClaimsOnMyItems" class="col-span-full text-center text-gray-600 hidden">No one has claimed your found items yet.</p>
-                    </div>
         </div>
 
-    </main>
+        <div class="mt-6 bg-[#2B2E33] p-6 rounded-xl shadow-lg">
+            <h2 class="text-2xl font-bold text-white mb-4">Claims on My Items</h2>
+            <div id="claimsOnMyItemsList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <p id="noClaimsOnMyItems" class="col-span-full text-center text-gray-500 hidden">No one has claimed your found items yet.</p>
+            </div>
+        </div>
+    </div>
 
     <script>
         let currentUserId = null;
@@ -109,23 +227,29 @@
         async function loadMyItems() {
             const myLostItemsGrid = document.getElementById('myLostItemsGrid');
             const myFoundItemsGrid = document.getElementById('myFoundItemsGrid');
-            const myClaimRequestsList = document.getElementById('myClaimRequestsList'); // Get new element
-            const claimsOnMyItemsList = document.getElementById('claimsOnMyItemsList'); // Get new element
+            const myClaimRequestsList = document.getElementById('myClaimRequestsList');
+            const claimsOnMyItemsList = document.getElementById('claimsOnMyItemsList');
 
             const noMyLostItems = document.getElementById('noMyLostItems');
             const noMyFoundItems = document.getElementById('noMyFoundItems');
-            const noMyClaimRequests = document.getElementById('noMyClaimRequests'); // Get new element
-            const noClaimsOnMyItems = document.getElementById('noClaimsOnMyItems'); // Get new element
+            const noMyClaimRequests = document.getElementById('noMyClaimRequests');
+            const noClaimsOnMyItems = document.getElementById('noClaimsOnMyItems');
+
+            // Dashboard Summary Elements (for updating counts)
+            const totalMyLostItems = document.getElementById('totalMyLostItems');
+            const totalMyFoundItems = document.getElementById('totalMyFoundItems');
+            const totalMyClaimRequests = document.getElementById('totalMyClaimRequests');
+            const totalClaimsOnMyItems = document.getElementById('totalClaimsOnMyItems');
             
             myLostItemsGrid.innerHTML = '';
             myFoundItemsGrid.innerHTML = '';
-            myClaimRequestsList.innerHTML = ''; // Clear
-            claimsOnMyItemsList.innerHTML = ''; // Clear
+            myClaimRequestsList.innerHTML = '';
+            claimsOnMyItemsList.innerHTML = '';
 
             noMyLostItems.classList.add('hidden');
             noMyFoundItems.classList.add('hidden');
-            noMyClaimRequests.classList.add('hidden'); // Hide
-            noClaimsOnMyItems.classList.add('hidden'); // Hide
+            noMyClaimRequests.classList.add('hidden');
+            noClaimsOnMyItems.classList.add('hidden');
 
             try {
                 // Fetch lost items by user
@@ -135,8 +259,10 @@
                     lostData.items.forEach(item => {
                         myLostItemsGrid.innerHTML += createItemCard(item);
                     });
+                    totalMyLostItems.textContent = lostData.items.length;
                 } else {
                     noMyLostItems.classList.remove('hidden');
+                    totalMyLostItems.textContent = '0';
                 }
 
                 // Fetch found items by user
@@ -146,8 +272,10 @@
                     foundData.items.forEach(item => {
                         myFoundItemsGrid.innerHTML += createItemCard(item);
                     });
+                    totalMyFoundItems.textContent = foundData.items.length;
                 } else {
                     noMyFoundItems.classList.remove('hidden');
+                    totalMyFoundItems.textContent = '0';
                 }
 
                 // Fetch claims made by current user
@@ -157,8 +285,10 @@
                     myClaimsData.claims.forEach(claim => {
                         myClaimRequestsList.innerHTML += createMyClaimCard(claim);
                     });
+                     totalMyClaimRequests.textContent = myClaimsData.claims.length;
                 } else {
                     noMyClaimRequests.classList.remove('hidden');
+                    totalMyClaimRequests.textContent = '0';
                 }
 
                 // Fetch claims on items posted by current user
@@ -168,9 +298,11 @@
                     claimsOnMyItemsData.claims.forEach(claim => {
                         claimsOnMyItemsList.innerHTML += createClaimOnMyItemCard(claim);
                     });
-                    attachClaimActionListeners(); // Attach listeners for approve/reject
+                    attachClaimActionListeners(); 
+                    totalClaimsOnMyItems.textContent = claimsOnMyItemsData.claims.length;
                 } else {
                     noClaimsOnMyItems.classList.remove('hidden');
+                    totalClaimsOnMyItems.textContent = '0';
                 }
 
             } catch (error) {
@@ -184,25 +316,25 @@
                 let colorClass = '';
                 let text = '';
                 switch(status) {
-                    case 'pending': colorClass = 'bg-yellow-100 text-yellow-800'; text = 'Pending'; break;
-                    case 'approved': colorClass = 'bg-green-100 text-green-800'; text = 'Approved'; break;
-                    case 'rejected': colorClass = 'bg-red-100 text-red-800'; text = 'Rejected'; break;
-                    default: colorClass = 'bg-gray-100 text-gray-800'; text = 'Unknown'; break;
+                    case 'pending': colorClass = 'bg-yellow-600 text-yellow-100'; text = 'Pending'; break;
+                    case 'approved': colorClass = 'bg-green-600 text-green-100'; text = 'Approved'; break;
+                    case 'rejected': colorClass = 'bg-red-600 text-red-100'; text = 'Rejected'; break;
+                    default: colorClass = 'bg-gray-600 text-gray-100'; text = 'Unknown'; break;
                 }
                 return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${colorClass}">${text}</span>`;
             };
 
             return `
-                <div class="bg-white p-4 rounded-lg shadow-sm border border-indigo-200 flex items-center gap-4">
+                <div class="bg-[#3A3E45] p-4 rounded-lg shadow-sm border border-indigo-700 flex items-center gap-4">
                     <img src="${claim.image_url ? claim.image_url : 'https://via.placeholder.com/60x60?text=Item'}" 
                          alt="${claim.item_name}" class="w-16 h-16 object-cover rounded-md flex-shrink-0">
                     <div class="flex-grow">
-                        <h4 class="font-semibold text-gray-800">${claim.item_name}</h4>
-                        <p class="text-sm text-gray-600">Claim Status: ${statusBadge(claim.claim_status)}</p>
-                        <p class="text-xs text-gray-500">Claimed on: ${new Date(claim.created_at).toLocaleDateString()}</p>
-                        <p class="text-xs text-gray-500">Finder: ${claim.finder_name}</p>
+                        <h4 class="font-semibold text-gray-100">${claim.item_name}</h4>
+                        <p class="text-sm text-gray-300">Claim Status: ${statusBadge(claim.claim_status)}</p>
+                        <p class="text-xs text-gray-400">Claimed on: ${new Date(claim.created_at).toLocaleDateString()}</p>
+                        <p class="text-xs text-gray-400">Finder: ${claim.finder_name}</p>
                         ${claim.claim_status === 'approved' ? `
-                            <p class="text-xs text-green-600 mt-1">Contact finder: ${claim.finder_email}</p>` : ''}
+                            <p class="text-xs text-green-400 mt-1">Contact finder: ${claim.finder_email}</p>` : ''}
                     </div>
                 </div>
             `;
@@ -214,31 +346,31 @@
                 let colorClass = '';
                 let text = '';
                 switch(status) {
-                    case 'pending': colorClass = 'bg-yellow-100 text-yellow-800'; text = 'Pending'; break;
-                    case 'approved': colorClass = 'bg-green-100 text-green-800'; text = 'Approved'; break;
-                    case 'rejected': colorClass = 'bg-red-100 text-red-800'; text = 'Rejected'; break;
-                    default: colorClass = 'bg-gray-100 text-gray-800'; text = 'Unknown'; break;
+                    case 'pending': colorClass = 'bg-yellow-600 text-yellow-100'; text = 'Pending'; break;
+                    case 'approved': colorClass = 'bg-green-600 text-green-100'; text = 'Approved'; break;
+                    case 'rejected': colorClass = 'bg-red-600 text-red-100'; text = 'Rejected'; break;
+                    default: colorClass = 'bg-gray-600 text-gray-100'; text = 'Unknown'; break;
                 }
                 return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${colorClass}">${text}</span>`;
             };
 
             return `
-                <div class="bg-white p-4 rounded-lg shadow-sm border border-purple-200 flex items-center gap-4">
+                <div class="bg-[#3A3E45] p-4 rounded-lg shadow-sm border border-purple-700 flex items-center gap-4">
                     <img src="${claim.image_url ? claim.image_url : 'https://via.placeholder.com/60x60?text=Item'}" 
                          alt="${claim.item_name}" class="w-16 h-16 object-cover rounded-md flex-shrink-0">
                     <div class="flex-grow">
-                        <h4 class="font-semibold text-gray-800">${claim.item_name} (ID: ${claim.item_id})</h4>
-                        <p class="text-sm text-gray-600">Claimer: ${claim.claimer_name}</p>
-                        <p class="text-xs text-gray-500">Claim Status: ${statusBadge(claim.claim_status)}</p>
-                        <p class="text-xs text-gray-500">Proof: ${claim.proof_details}</p>
+                        <h4 class="font-semibold text-gray-100">${claim.item_name} (ID: ${claim.item_id})</h4>
+                        <p class="text-sm text-gray-300">Claimer: ${claim.claimer_name}</p>
+                        <p class="text-xs text-gray-400">Claim Status: ${statusBadge(claim.claim_status)}</p>
+                        <p class="text-xs text-gray-400">Proof: ${claim.proof_details}</p>
                         ${claim.claim_status === 'pending' ? `
                             <div class="mt-2 flex gap-2">
-                                <button data-claim-id="${claim.id}" data-status="approved" class="claim-action-btn bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs">Approve</button>
-                                <button data-claim-id="${claim.id}" data-status="rejected" class="claim-action-btn bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs">Reject</button>
+                                <button data-claim-id="${claim.id}" data-status="approved" class="claim-action-btn bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs shadow-sm">Approve</button>
+                                <button data-claim-id="${claim.id}" data-status="rejected" class="claim-action-btn bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs shadow-sm">Reject</button>
                             </div>
                         ` : ''}
                         ${claim.claim_status === 'approved' ? `
-                            <p class="text-xs text-green-600 mt-1">Claimer contact: ${claim.claimer_email}</p>` : ''}
+                            <p class="text-xs text-green-400 mt-1">Claimer contact: ${claim.claimer_email}</p>` : ''}
                     </div>
                 </div>
             `;
@@ -282,22 +414,22 @@
                 let colorClass = '';
                 let text = '';
                 switch(status) {
-                    case 'active': colorClass = 'bg-blue-100 text-blue-800'; text = 'Active'; break;
-                    case 'claimed': colorClass = 'bg-yellow-100 text-yellow-800'; text = 'Claimed'; break;
-                    case 'resolved': colorClass = 'bg-green-100 text-green-800'; text = 'Resolved'; break;
-                    case 'archived': colorClass = 'bg-gray-100 text-gray-800'; text = 'Archived'; break;
-                    default: colorClass = 'bg-gray-100 text-gray-800'; text = 'Unknown'; break;
+                    case 'active': colorClass = 'bg-blue-600 text-blue-100'; text = 'Active'; break;
+                    case 'claimed': colorClass = 'bg-yellow-600 text-yellow-100'; text = 'Claimed'; break;
+                    case 'resolved': colorClass = 'bg-green-600 text-green-100'; text = 'Resolved'; break;
+                    case 'archived': colorClass = 'bg-gray-600 text-gray-100'; text = 'Archived'; break;
+                    default: colorClass = 'bg-gray-600 text-gray-100'; text = 'Unknown'; break;
                 }
                 return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClass}">${text}</span>`;
             };
 
             return `
-                <a href="item_detail.html?id=${item.id}" class="block bg-white rounded-lg shadow-sm hover:shadow-lg transition duration-200 ease-in-out overflow-hidden">
+                <a href="item_detail.html?id=${item.id}" class="block bg-[#3A3E45] rounded-lg shadow-sm hover:shadow-lg transition duration-200 ease-in-out overflow-hidden">
                     <img src="${item.image_url ? item.image_url : 'https://via.placeholder.com/300x200?text=No+Image'}" 
                          alt="${item.name}" class="w-full h-32 object-cover object-center">
                     <div class="p-3">
-                        <h4 class="text-lg font-semibold text-gray-800 mb-1">${item.name}</h4>
-                        <p class="text-xs text-gray-600 mb-2">${item.location}</p>
+                        <h4 class="text-lg font-semibold text-gray-100 mb-1">${item.name}</h4>
+                        <p class="text-xs text-gray-400 mb-2">${item.location}</p>
                         ${statusBadge(item.status)}
                     </div>
                 </a>

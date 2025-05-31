@@ -1,165 +1,258 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Register - Lost & Found Portal</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Register - Lost & Found Portal</title>
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: #f1f5f9;
-    }
-  </style>
-</head>
-<body class="bg-gray-100 text-gray-900 font-sans flex items-center justify-center min-h-screen">
-  <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
-
-    <div class="w-8 h-8 flex items-center justify-center rounded-full bg-red-600 text-white hover:bg-red-700 transition duration-200">
-      <a href="index.html" class="text-lg">
-          <i class="fas fa-arrow-left"></i>
-      </a>
-    </div>
-
-
-    <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Join the Community!</h2>
-    <p class="text-center text-gray-600 mb-8">Create your account to start reporting lost and found items.</p>
-
-    <form id="registerForm" action="php/register.php" method="POST" class="space-y-6" novalidate>
-      <div>
-        <label for="name" class="block text-sm font-medium text-gray-700">Full Name</label>
-        <input
-          type="text"
-          id="name"
-          name="name"
-          class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          placeholder="Faizan Anjum"
-        />
-      </div>
-      <div>
-        <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          placeholder="your.email@umt.edu.pk"
-        />
-      </div>
-      <div>
-        <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-        <input
-          type="password"
-          id="password"
-          name="password"
-          class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          placeholder="••••••••"
-        />
-      </div>
-      <button
-        type="submit"
-        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-lg font-semibold text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out"
-      >
-        Register
-      </button>
-    </form>
-
-    <div class="mt-6 text-center">
-      <p class="text-sm text-gray-600">Already have an account? <a href="login.html" class="font-medium text-red-600 hover:text-red-500">Login here</a></p>
-    </div>
-    <!-- Here we show all error messages together -->
-    <div id="errorMessages" class="mt-4 p-3 rounded-md bg-red-100 text-red-700 hidden"></div>
-
-    <div id="message" class="mt-4 p-3 text-sm text-center rounded-md hidden"></div>
-  </div>
-
-  <script>
-    document.getElementById('registerForm').addEventListener('submit', async function (event) {
-      event.preventDefault();
-
-      // Clear previous errors and messages
-      const errorDiv = document.getElementById('errorMessages');
-      errorDiv.innerHTML = '';
-      errorDiv.classList.add('hidden');
-
-      const messageDiv = document.getElementById('message');
-      messageDiv.textContent = '';
-      messageDiv.classList.add('hidden');
-
-      const form = event.target;
-      const formData = new FormData(form);
-      const name = formData.get('name').trim();
-      const email = formData.get('email').trim();
-      const password = formData.get('password').trim();
-
-      let errors = [];
-
-      // Frontend validation for convenience
-      if (!name) {
-        errors.push('Full Name is required.');
-      }
-
-      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      const allowedDomain = 'umt.edu.pk';
-
-      if (!email) {
-        errors.push('Email is required.');
-      } else if (!emailPattern.test(email)) {
-        errors.push('Please enter a valid email address.');
-      } else if (!email.endsWith('@' + allowedDomain)) {
-        errors.push(`Only ${allowedDomain} email addresses are allowed.`);
-      }
-
-      if (!password) {
-        errors.push('Password is required.');
-      } else if (password.length < 6) {
-        errors.push('Password must be at least 6 characters.');
-      }
-
-      if (errors.length > 0) {
-        errorDiv.innerHTML = errors.map(err => `<p>${err}</p>`).join('');
-        errorDiv.classList.remove('hidden');
-        return;
-      }
-
-      // Submit to backend
-      try {
-        const response = await fetch(form.action, {
-          method: 'POST',
-          body: formData,
-        });
-        const data = await response.json();
-
-        if (data.success) {
-          messageDiv.textContent = data.message;
-          messageDiv.className = 'mt-4 p-3 text-sm text-center rounded-md bg-green-100 text-green-700';
-          messageDiv.classList.remove('hidden');
-
-          setTimeout(() => {
-            window.location.href = 'user_dashboard.html';
-          }, 1000);
-        } else {
-          // If backend returns errors field-wise
-          if (data.errors) {
-            const backendErrors = Object.values(data.errors);
-            errorDiv.innerHTML = backendErrors.map(err => `<p>${err}</p>`).join('');
-            errorDiv.classList.remove('hidden');
-          } else if (data.message) {
-            // General error message
-            messageDiv.textContent = data.message;
-            messageDiv.className = 'mt-4 p-3 text-sm text-center rounded-md bg-red-100 text-red-700';
-            messageDiv.classList.remove('hidden');
-          }
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Import Inter font from Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            overflow: hidden; /* Prevent scrollbars if background image is larger than viewport */
         }
-      } catch (error) {
-        console.error('Error:', error);
-        messageDiv.textContent = 'An error occurred. Please try again.';
-        messageDiv.className = 'mt-4 p-3 text-sm text-center rounded-md bg-red-100 text-red-700';
-        messageDiv.classList.remove('hidden');
-      }
-    });
-  </script>
+        
+        /* Full-screen background image container */
+        .bg-image {
+            position: fixed; /* Fixes the background image to the viewport */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+
+            background-image: url('img/bg-img.jpg'); 
+            background-size: cover; /* Ensures the image covers the entire element */
+            background-position: center; /* Centers the image */
+            z-index: -1; /* Puts the background image behind other content */
+            filter: brightness(0.7); /* Slightly darken the background for better text contrast */
+        }
+        
+        /* Styling for the transparent register form container */
+        .transparent-form {
+            background-color: rgba(0, 0, 0, 0.7); /* Slightly transparent white */
+            backdrop-filter: blur(10px); /* Applies a blur effect to content behind the form */
+            -webkit-backdrop-filter: blur(10px); /* Safari support */
+            padding: 2rem;
+            border-radius: 1rem; /* Rounded corners for the form box */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Soft shadow */
+            border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle light border */
+        }
+        
+        /* Text color for labels inside the transparent form */
+        .transparent-form label {
+            color: #f3f4f6; /* Light gray text for labels */
+        }
+        
+        /* Styling for input fields inside the transparent form */
+        .transparent-form input {
+            background-color: rgba(255, 255, 255, 0.2); /* Transparent white background for inputs */
+            border: 1px solid rgba(255, 255, 255, 0.3); /* Slightly more opaque border */
+            color: #f3f4f6; /* Light text color for input values */
+        }
+        
+        /* Placeholder text color for input fields */
+        .transparent-form input::placeholder {
+            color: #d1d5db; /* Lighter gray for placeholders */
+        }
+        
+        /* Styling for the submit button */
+        .transparent-form button[type="submit"] {
+            background-color: rgba(220, 38, 38, 0.7); /* Slightly transparent red */
+            color: #f3f4f6; /* Light text color */
+        }
+        
+        /* Hover effect for the submit button */
+        .transparent-form button[type="submit"]:hover {
+            background-color: rgba(220, 38, 38, 0.8); /* Darker red on hover */
+        }
+        
+        /* Styling for links (e.g., "Login here") */
+        .transparent-form a {
+            color: #f472b6; /* Pink accent color for links */
+        }
+        
+        /* Hover effect for links */
+        .transparent-form a:hover {
+            color: #ec4899; /* Darker pink on hover */
+        }
+
+        /* Styling for the back button (top-left) */
+        .back-button {
+            background-color: rgba(220, 38, 38, 0.7);
+            color: #f3f4f6;
+        }
+        
+        /* Hover effect for the back button */
+        .back-button:hover {
+            background-color: rgba(220, 38, 38, 0.8);
+        }
+
+        /* Styling for error messages */
+        #errorMessages {
+            background-color: rgba(255, 0, 0, 0.2); /* Transparent red for errors */
+            color: #f87171; /* Lighter red text */
+            border: 1px solid rgba(255, 0, 0, 0.3);
+        }
+        /* Styling for success messages */
+        #message {
+            background-color: rgba(0, 255, 0, 0.2); /* Transparent green for success */
+            color: #a7f3d0; /* Lighter green text */
+            border: 1px solid rgba(0, 255, 0, 0.3);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+    <div class="bg-image"></div>
+
+    <div class="transparent-form p-8 rounded-lg shadow-xl w-full max-w-md relative z-10">
+        <div class="w-8 h-8 flex items-center justify-center rounded-full back-button transition duration-200 mb-4">
+            <a href="index.html" class="text-lg">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+        </div>
+
+        <h2 class="text-3xl font-bold text-center text-white mb-6">Join the Community!</h2>
+        <p class="text-center text-gray-300 mb-8">Create your account to start reporting lost and found items.</p>
+
+        <form id="registerForm" action="php/register.php" method="POST" class="space-y-6" novalidate>
+            <div>
+                <label for="name" class="block text-sm font-medium">Full Name</label>
+                <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    class="mt-1 block w-full px-4 py-2 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    placeholder="Faizan Anjum"
+                />
+            </div>
+            <div>
+                <label for="email" class="block text-sm font-medium">Email Address</label>
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    class="mt-1 block w-full px-4 py-2 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    placeholder="your.email@umt.edu.pk"
+                />
+            </div>
+            <div>
+                <label for="password" class="block text-sm font-medium">Password</label>
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    class="mt-1 block w-full px-4 py-2 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    placeholder="••••••••"
+                />
+            </div>
+            <button
+                type="submit"
+                class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out"
+            >
+                Register
+            </button>
+        </form>
+
+        <div class="mt-6 text-center">
+            <p class="text-sm text-gray-300">Already have an account? <a href="login.html" class="font-medium hover:text-red-500">Login here</a></p>
+        </div>
+        
+        <div id="errorMessages" class="mt-4 p-3 text-sm rounded-md hidden"></div>
+        <div id="message" class="mt-4 p-3 text-sm text-center rounded-md hidden"></div>
+    </div>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async function (event) {
+            event.preventDefault(); // Prevent default form submission
+
+            // Clear previous errors and messages
+            const errorDiv = document.getElementById('errorMessages');
+            errorDiv.innerHTML = '';
+            errorDiv.classList.add('hidden');
+
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = '';
+            messageDiv.classList.add('hidden');
+
+            const form = event.target;
+            const formData = new FormData(form);
+            const name = formData.get('name').trim();
+            const email = formData.get('email').trim();
+            const password = formData.get('password').trim();
+
+            let errors = [];
+
+            // Frontend validation for convenience
+            if (!name) {
+                errors.push('Full Name is required.');
+            }
+
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const allowedDomain = 'umt.edu.pk';
+
+            if (!email) {
+                errors.push('Email is required.');
+            } else if (!emailPattern.test(email)) {
+                errors.push('Please enter a valid email address.');
+            } else if (!email.endsWith('@' + allowedDomain)) {
+                errors.push(`Only ${allowedDomain} email addresses are allowed.`);
+            }
+
+            if (!password) {
+                errors.push('Password is required.');
+            } else if (password.length < 6) {
+                errors.push('Password must be at least 6 characters.');
+            }
+
+            if (errors.length > 0) {
+                errorDiv.innerHTML = errors.map(err => `<p>${err}</p>`).join('');
+                errorDiv.classList.remove('hidden');
+                return; // Stop submission if frontend validation fails
+            }
+
+            // Submit to backend if frontend validation passes
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    messageDiv.textContent = data.message;
+                    messageDiv.className = 'mt-4 p-3 text-sm text-center rounded-md bg-green-500 text-white'; // Success styling
+                    messageDiv.classList.remove('hidden');
+
+                    // Redirect to user dashboard on successful registration
+                    setTimeout(() => {
+                        window.location.href = 'user_dashboard.html';
+                    }, 1000); // Redirect after 1 second
+                } else {
+                    // If backend returns errors (e.g., email already exists)
+                    if (data.errors) {
+                        const backendErrors = Object.values(data.errors);
+                        errorDiv.innerHTML = backendErrors.map(err => `<p>${err}</p>`).join('');
+                        errorDiv.classList.remove('hidden');
+                    } else if (data.message) {
+                        // General error message from backend
+                        messageDiv.textContent = data.message;
+                        messageDiv.className = 'mt-4 p-3 text-sm text-center rounded-md bg-red-500 text-white'; // Error styling
+                        messageDiv.classList.remove('hidden');
+                    }
+                }
+            } catch (error) {
+                // Handle network or other unexpected errors
+                console.error('Error:', error);
+                messageDiv.textContent = 'An error occurred. Please try again.';
+                messageDiv.className = 'mt-4 p-3 text-sm text-center rounded-md bg-red-500 text-white'; // Generic error styling
+                messageDiv.classList.remove('hidden');
+            }
+        });
+    </script>
 </body>
 </html>

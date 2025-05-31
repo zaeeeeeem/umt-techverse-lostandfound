@@ -6,37 +6,108 @@
     <title>Found Items - UMT L&F Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         body { font-family: 'Inter', sans-serif; }
+
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #2b2d42; /* Dark background similar to sidebar */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4A4E69; /* Slightly lighter dark for thumb */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6C6F82; /* Even lighter on hover */
+        }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-900 font-sans">
-    <nav class="bg-indigo-600 p-4 shadow-md sticky top-0 z-10">
-        <div class="container mx-auto flex justify-between items-center">
-            <a href="user_dashboard.html" class="text-white text-2xl font-bold tracking-wide">UMT L&F Portal</a>
-            <div class="flex space-x-4 items-center">
-                <a href="lost_items.html" class="text-white hover:text-indigo-100 transition duration-150 py-2 px-3 rounded-md hover:bg-indigo-700">Lost Items</a>
-                <a href="found_items.html" class="text-white hover:text-indigo-100 transition duration-150 py-2 px-3 rounded-md hover:bg-indigo-700">Found Items</a>
-                <a href="post_lost.html" class="bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-2 px-4 rounded-md transition duration-150 shadow-sm">Report Lost</a>
-                <a href="post_found.html" class="bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-2 px-4 rounded-md transition duration-150 shadow-sm">Report Found</a>
-                <span id="userNameDisplay" class="text-white font-medium ml-4"></span>
-                <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md transition duration-150 shadow-sm">Logout</button>
+<body class="bg-[#1A1C20] text-gray-200 font-sans flex min-h-screen">
+    <aside class="w-64 bg-[#23262A] text-gray-300 shadow-lg p-6 flex flex-col fixed h-full z-20">
+        <div class="text-white text-3xl font-extrabold mb-8 mt-4 text-center">
+            <img src="img/logo-final.png" alt="">
+        </div>
+        
+        <nav class="flex-grow">
+            <ul>
+                <li class="mb-3">
+                    <a href="user_dashboard.html" class="flex items-center p-3 rounded-lg hover:bg-gray-700 transition duration-200">
+                        <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
+                        Home
+                    </a>
+                </li>
+                <li class="mb-3">
+                    <a href="lost_items.html" class="flex items-center p-3 rounded-lg hover:bg-gray-700 transition duration-200">
+                        <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"></path></svg>
+                        Lost Items
+                    </a>
+                </li>
+                <li class="mb-3">
+                    <a href="found_items.html" class="flex items-center p-3 rounded-lg text-white font-semibold bg-indigo-600">
+                        <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"></path></svg>
+                        Found Items
+                    </a>
+                </li>
+                <li class="mb-3">
+                    <a href="post_lost.html" class="flex items-center p-3 rounded-lg hover:bg-gray-700 transition duration-200">
+                        <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20"><path d="M11 3a1 1 0 10-2 0v7a1 1 0 102 0V3zm-3.35 9.65a1 1 0 10-1.4 1.4L8.586 16H6a1 1 0 100 2h10a1 1 0 100-2h-2.586l2.232-2.232a1 1 0 10-1.414-1.414L10 14.586l-2.35-2.35z"></path></svg>
+                        Report Lost
+                    </a>
+                </li>
+                <li class="mb-3">
+                    <a href="post_found.html" class="flex items-center p-3 rounded-lg hover:bg-gray-700 transition duration-200">
+                        <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2a.75.75 0 01.75.75v6.5h6.5a.75.75 0 010 1.5h-6.5v6.5a.75.75 0 01-1.5 0v-6.5h-6.5a.75.75 0 010-1.5h6.5v-6.5A.75.75 0 0110 2z" clip-rule="evenodd"></path></svg>
+                        Report Found
+                    </a>
+                </li>
+                 <li class="mb-3">
+                    <a href="chat_inbox.html" class="flex items-center p-3 rounded-lg hover:bg-gray-700 transition duration-200">
+                        <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.758-1.543c-.337.1-.63.2-.848.243-.167.037-.308.0-.405-.013L2 16.5V14.25a.75.75 0 01.12-.328c.35-.453.6-.976.722-1.523A8.84 8.84 0 012 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7.5 8a.75.75 0 000 1.5h5a.75.75 0 000-1.5h-5z" clip-rule="evenodd"></path></svg>
+                        My Chats
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="mt-auto">
+            <div class="flex items-center justify-between p-3 rounded-lg bg-gray-700">
+                <span id="userNameDisplay" class="text-white font-medium"></span>
+                <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-1 px-3 rounded-md text-sm transition duration-150 shadow-sm">Logout</button>
             </div>
         </div>
-    </nav>
-    <main class="container mx-auto p-6">
-        <h1 class="text-4xl font-extrabold text-gray-800 mb-8 text-center">Recently Found Items</h1>
+    </aside>
 
-        <div class="bg-white p-6 rounded-lg shadow-md mb-8 flex flex-wrap gap-4 items-center">
+    <main class="flex-1 ml-64 p-6 overflow-auto">
+        <!-- <header class="bg-[#2B2E33] rounded-xl p-4 mb-6 shadow-md flex items-center justify-between">
+            <div class="relative w-1/3">
+                <input type="text" placeholder="Search items..." class="w-full pl-10 pr-4 py-2 rounded-lg bg-[#3A3E45] text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="text-gray-400">Last Week</span>
+                <span class="text-white font-medium bg-gray-700 px-3 py-1 rounded-md">Last Month</span>
+                <div class="w-9 h-9 rounded-full bg-indigo-500 flex items-center justify-center text-white font-semibold">U</div>
+            </div>
+        </header> -->
+
+        <h1 class="text-4xl font-extrabold text-white mb-8 text-center">Recently Found Items</h1>
+
+        <div class="bg-[#2B2E33] p-6 rounded-xl shadow-md mb-8 flex flex-wrap gap-4 items-center">
             <input type="text" id="categoryFilter" placeholder="Filter by Category"
-                   class="flex-1 min-w-[150px] px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                   class="flex-1 min-w-[150px] px-4 py-2 border border-gray-600 rounded-md bg-[#3A3E45] text-gray-200 placeholder-gray-500 focus:ring-indigo-500 focus:border-indigo-500">
             <input type="text" id="locationFilter" placeholder="Filter by Location"
-                   class="flex-1 min-w-[150px] px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                   class="flex-1 min-w-[150px] px-4 py-2 border border-gray-600 rounded-md bg-[#3A3E45] text-gray-200 placeholder-gray-500 focus:ring-indigo-500 focus:border-indigo-500">
             <button id="applyFilterBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm transition duration-150">Apply Filters</button>
-            <button id="resetFilterBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-md shadow-sm transition duration-150">Reset Filters</button>
+            <button id="resetFilterBtn" class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm transition duration-150">Reset Filters</button>
         </div>
 
         <div id="foundItemsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <p id="noItemsMessage" class="col-span-full text-center text-gray-600 text-lg hidden">No found items found matching your criteria.</p>
+            <p id="noItemsMessage" class="col-span-full text-center text-gray-500 text-lg hidden">No found items found matching your criteria.</p>
         </div>
     </main>
 
@@ -86,7 +157,7 @@
             const category = categoryFilter.value.trim();
             const location = locationFilter.value.trim();
             
-            let url = 'php/get_items.php?type=found';
+            let url = 'php/get_items.php?type=found'; // Ensure this targets 'found' items
             if (category) url += `&category=${encodeURIComponent(category)}`;
             if (location) url += `&location=${encodeURIComponent(location)}`;
 
@@ -97,17 +168,17 @@
                 if (data.success && data.items.length > 0) {
                     data.items.forEach(item => {
                         const itemCard = `
-                            <a href="item_detail.html?id=${item.id}" class="block bg-white rounded-lg shadow-md hover:shadow-xl transition duration-300 ease-in-out overflow-hidden">
+                            <a href="item_detail.html?id=${item.id}" class="block bg-[#2B2E33] rounded-xl shadow-md hover:shadow-xl transition duration-300 ease-in-out overflow-hidden">
                                 <img src="${item.image_url ? item.image_url : 'https://via.placeholder.com/400x300?text=No+Image'}" 
                                      alt="${item.name}" class="w-full h-48 object-cover object-center">
                                 <div class="p-5">
-                                    <h3 class="text-xl font-semibold text-gray-800 mb-2">${item.name}</h3>
-                                    <p class="text-sm text-gray-600 mb-1"><strong>Category:</strong> ${item.category}</p>
-                                    <p class="text-sm text-gray-600 mb-1"><strong>Found Location:</strong> ${item.location}</p>
-                                    <p class="text-sm text-gray-600 mb-1"><strong>Date Found:</strong> ${item.date_lost_found}</p>
+                                    <h3 class="text-xl font-semibold text-white mb-2">${item.name}</h3>
+                                    <p class="text-sm text-gray-400 mb-1"><strong>Category:</strong> ${item.category}</p>
+                                    <p class="text-sm text-gray-400 mb-1"><strong>Found Location:</strong> ${item.location}</p>
+                                    <p class="text-sm text-gray-400 mb-1"><strong>Date Found:</strong> ${item.date_lost_found}</p>
                                     <p class="text-xs text-gray-500 mt-2">Posted by ${item.user_name} on ${new Date(item.created_at).toLocaleDateString()}</p>
-                                    ${item.status === 'claimed' ? '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 mt-2">Claimed</span>' : ''}
-                                    ${item.status === 'resolved' ? '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 mt-2">Resolved</span>' : ''}
+                                    ${item.status === 'claimed' ? '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-600 text-yellow-100 mt-2">Claimed</span>' : ''}
+                                    ${item.status === 'resolved' ? '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-600 text-green-100 mt-2">Resolved</span>' : ''}
                                 </div>
                             </a>
                         `;
