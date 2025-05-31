@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Chats - UMT L&F Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-900 font-sans">
+    <nav class="bg-indigo-600 p-4 shadow-md sticky top-0 z-10">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="user_dashboard.html" class="text-white text-2xl font-bold tracking-wide">UMT L&F Portal</a>
+            <div class="flex space-x-4 items-center">
+                <a href="lost_items.html" class="text-white hover:text-indigo-100 transition duration-150 py-2 px-3 rounded-md hover:bg-indigo-700">Lost Items</a>
+                <a href="found_items.html" class="text-white hover:text-indigo-100 transition duration-150 py-2 px-3 rounded-md hover:bg-indigo-700">Found Items</a>
+                <a href="post_lost.html" class="bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-2 px-4 rounded-md transition duration-150 shadow-sm">Report Lost</a>
+                <a href="post_found.html" class="bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-2 px-4 rounded-md transition duration-150 shadow-sm">Report Found</a>
+                <span id="userNameDisplay" class="text-white font-medium ml-4"></span>
+                <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md transition duration-150 shadow-sm">Logout</button>
+            </div>
+        </div>
+    </nav>
+    <main class="container mx-auto p-6">
+        <h1 class="text-4xl font-extrabold text-gray-800 mb-8 text-center">My Active Chats</h1>
+        
+        <div id="chatsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <p id="loadingChats" class="col-span-full text-center text-gray-600">Loading chats...</p>
+            <p id="noChats" class="col-span-full text-center text-gray-600 hidden">You have no active chats yet.</p>
+        </div>
+    </main>
+
+    <script>
+        // Common Navbar JS (Copy from your other pages)
+        let currentUserId = null; 
+        async function checkSessionAndNavbar() {
+            try {
+                const response = await fetch('php/check_session.php');
+                const data = await response.json();
+                const userNameDisplay = document.getElementById('userNameDisplay');
+                const logoutBtn = document.getElementById('logoutBtn');
+                
+                if (data.loggedIn) {
+                    currentUserId = data.userId; // Store ID
+                    userNameDisplay.textContent = `Hello, ${data.userName}!`;
+                    logoutBtn.style.display = 'inline-block';
+                    loadActiveChats(); // Load chats when logged in
+                } else {
+                    currentUserId = null;
+                    userNameDisplay.textContent = '';
+                    logoutBtn.style.display = 'none';
+                    if (!['login.html', 'register.html'].includes(window.location.pathname.split('/').pop())) {
+                        window.location.href = 'login.html'; // Redirect if not logged in
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking session:', error);
+                if (!['login.html', 'register.html'].includes(window.location.pathname.split('/').pop())) {
+                    window.location.href = 'login.html';
+                }
+            }
+        }
+        checkSessionAndNavbar();
+
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            window.location.href = 'php/logout.php';
+        });
+
+        // Active Chats Specific JavaScript
+        async function loadActiveChats() {
+            const chatsList = document.getElementById('chatsList');
+            const loadingChats = document.getElementById('loadingChats');
+            const noChats = document.getElementById('noChats');
+
+            chatsList.innerHTML = ''; // Clear previous content
+            loadingChats.classList.remove('hidden');
+            noChats.classList.add('hidden');
+
+            try {
+                const response = await fetch('php/get_all_active_chats.php');
+                const data = await response.json();
+
+                if (data.success && data.chats.length > 0) {
+                    data.chats.forEach(chat => {
+                        chatsList.innerHTML += createChatCard(chat);
+                    });
+                } else {
+                    noChats.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error loading active chats:', error);
+                noChats.textContent = 'Failed to load chats. Please try again.';
+                noChats.classList.remove('hidden');
+            } finally {
+                loadingChats.classList.add('hidden');
+            }
+        }
+
+        // Helper function to create a chat conversation card
+        function createChatCard(chat) {
+            // Determine text for the item type (Lost/Found)
+            const itemTypeText = chat.item_type === 'lost' ? 'Lost Item' : 'Found Item';
+
+            return `
+                <a href="chat.html?claim_id=${chat.claim_id}" class="block bg-white p-4 rounded-lg shadow-md hover:shadow-xl transition duration-300 ease-in-out">
+                    <div class="flex items-center mb-3">
+                        <img src="${chat.item_image_url ? chat.item_image_url : 'https://via.placeholder.com/60x60?text=Item'}" 
+                             alt="${chat.item_name}" class="w-16 h-16 object-cover rounded-md mr-4 flex-shrink-0">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800">${chat.item_name}</h3>
+                            <p class="text-sm text-gray-600">${itemTypeText} Chat</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 text-sm mb-2">Talking with: <span class="font-medium">${chat.other_participant_name}</span></p>
+                    <p class="text-gray-500 text-xs">Started on: ${new Date(chat.claim_created_at).toLocaleDateString()}</p>
+                </a>
+            `;
+        }
+    </script>
+</body>
+</html>

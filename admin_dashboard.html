@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - UMT L&F Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-900 font-sans">
+    <nav class="bg-indigo-600 p-4 shadow-md sticky top-0 z-10">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="admin_dashboard.html" class="text-white text-2xl font-bold tracking-wide">UMT L&F Portal</a>
+            <div class="flex space-x-4 items-center">
+                <a href="lost_items.html" class="text-white hover:text-indigo-100 transition duration-150 py-2 px-3 rounded-md hover:bg-indigo-700">Lost Items</a>
+                <a href="found_items.html" class="text-white hover:text-indigo-100 transition duration-150 py-2 px-3 rounded-md hover:bg-indigo-700">Found Items</a>
+                <a href="post_lost.html" class="bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-2 px-4 rounded-md transition duration-150 shadow-sm">Report Lost</a>
+                <a href="post_found.html" class="bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-2 px-4 rounded-md transition duration-150 shadow-sm">Report Found</a>
+                <span id="userNameDisplay" class="text-white font-medium ml-4"></span>
+                <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md transition duration-150 shadow-sm">Logout</button>
+            </div>
+        </div>
+    </nav>
+    <main class="container mx-auto p-6">
+        <h1 class="text-4xl font-extrabold text-gray-800 mb-8 text-center">Admin Dashboard</h1>
+
+        <div id="adminAccessDenied" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
+            <p class="font-bold">Access Denied</p>
+            <p>You do not have administrative privileges to view this page.</p>
+        </div>
+
+        <div id="adminContent" class="hidden">
+            <div class="bg-white p-6 rounded-lg shadow-xl mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">All Items (Lost & Found)</h2>
+                
+                <div class="mb-6 flex flex-wrap gap-4 items-center">
+                    <label for="statusFilter" class="block text-sm font-medium text-gray-700">Filter by Status:</label>
+                    <select id="statusFilter" class="mt-1 block w-full md:w-auto px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        <option value="all">Show All</option>
+                        <option value="active">Active</option>
+                        <option value="claimed">Claimed</option>
+                        <option value="resolved">Resolved</option>
+                        <option value="archived">Archived</option>
+                    </select>
+                    <button id="applyStatusFilterBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm transition duration-150">Apply Filter</button>
+                </div>
+                <p id="noAllItems" class="text-center text-gray-600 text-lg hidden mb-4">No items found matching your criteria.</p> 
+                <div id="allItemsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-xl">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Pending Claim Requests</h2>
+                <p id="noPendingClaims" class="text-center text-gray-600 text-lg hidden mb-4">No pending claim requests.</p>
+                <div id="pendingClaimsList" class="space-y-4">
+                    </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Global variable for current user ID (for admin session check consistency)
+        let currentUserId = null; 
+
+        async function checkSessionAndNavbar() {
+            try {
+                const response = await fetch('php/check_session.php');
+                const data = await response.json();
+                const userNameDisplay = document.getElementById('userNameDisplay');
+                const logoutBtn = document.getElementById('logoutBtn');
+                const adminAccessDenied = document.getElementById('adminAccessDenied');
+                const adminContent = document.getElementById('adminContent');
+                
+                if (data.loggedIn) {
+                    currentUserId = data.userId; // Store ID
+                    userNameDisplay.textContent = `Hello, ${data.userName}!`;
+                    logoutBtn.style.display = 'inline-block';
+
+                    // Admin specific logic
+                    if (data.userRole === 'admin') {
+                        adminContent.classList.remove('hidden');
+                        adminAccessDenied.classList.add('hidden');
+                        loadAdminDashboard(); // Function to load admin data
+                    } else {
+                        // Redirect non-admin users to the user dashboard
+                        adminContent.classList.add('hidden');
+                        adminAccessDenied.classList.remove('hidden'); // Show the error message briefly, then redirect
+                        setTimeout(() => {
+                            window.location.href = 'user_dashboard.html'; 
+                        }, 2000); // Redirect after 2 seconds
+                    }
+
+                } else {
+                    userNameDisplay.textContent = '';
+                    logoutBtn.style.display = 'none';
+                    // Redirect to login if not logged in and not on login/register page
+                    if (!['login.html', 'register.html'].includes(window.location.pathname.split('/').pop())) {
+                        window.location.href = 'login.html';
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking session:', error);
+                if (!['login.html', 'register.html'].includes(window.location.pathname.split('/').pop())) {
+                    window.location.href = 'login.html';
+                }
+            }
+        }
+        checkSessionAndNavbar();
+
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            window.location.href = 'php/logout.php';
+        });
+
+        // Admin Dashboard Specific JavaScript
+        async function loadAdminDashboard() {
+            const allItemsGrid = document.getElementById('allItemsGrid');
+            const noAllItems = document.getElementById('noAllItems'); // Reference now remains valid
+            const pendingClaimsList = document.getElementById('pendingClaimsList');
+            const noPendingClaims = document.getElementById('noPendingClaims'); // Reference now remains valid
+            const statusFilter = document.getElementById('statusFilter'); // Get reference to filter select
+
+            allItemsGrid.innerHTML = '';
+            // noAllItems.classList.add('hidden'); // This line is still needed, but now it works
+            pendingClaimsList.innerHTML = '';
+            // noPendingClaims.classList.add('hidden'); // This line is still needed, but now it works
+
+            // Crucial: Hide messages first, they will be shown later if no items/claims are found
+            noAllItems.classList.add('hidden');
+            noPendingClaims.classList.add('hidden');
+
+
+            try {
+                // Fetch all items (lost and found) - includes show_all=true to bypass status filter
+                // Now includes status_filter parameter
+                const selectedStatus = statusFilter.value; // Get selected value from filter
+                let allItemsUrl = 'php/get_items.php?type=&show_all=true';
+                if (selectedStatus !== 'all') { // Only add filter if 'Show All' is not selected
+                    allItemsUrl += `&status_filter=${encodeURIComponent(selectedStatus)}`;
+                }
+                const allItemsResponse = await fetch(allItemsUrl); 
+                const allItemsData = await allItemsResponse.json();
+
+                if (allItemsData.success && allItemsData.items.length > 0) {
+                    allItemsData.items.forEach(item => {
+                        allItemsGrid.innerHTML += createAdminItemCard(item);
+                    });
+                } else {
+                    noAllItems.classList.remove('hidden');
+                }
+
+                // Fetch pending claims for admin
+                const pendingClaimsResponse = await fetch('php/get_claims.php?type=all_pending_for_admin'); 
+                const pendingClaimsData = await pendingClaimsResponse.json();
+
+                if (pendingClaimsData.success && pendingClaimsData.claims.length > 0) {
+                    const filteredPendingClaims = pendingClaimsData.claims.filter(claim => claim.claim_status === 'pending');
+                    if (filteredPendingClaims.length > 0) {
+                         filteredPendingClaims.forEach(claim => {
+                            pendingClaimsList.innerHTML += createAdminClaimCard(claim);
+                        });
+                    } else {
+                        noPendingClaims.classList.remove('hidden');
+                    }
+                } else {
+                    noPendingClaims.classList.remove('hidden');
+                }
+
+                // Attach event listeners after ALL content (items and claims) have been rendered
+                attachAdminClaimEventListeners(); 
+
+            } catch (error) {
+                console.error('Error loading admin dashboard:', error);
+            }
+        }
+
+        // Helper to create item card for admin (REVERTED to top image layout, larger image)
+        function createAdminItemCard(item) {
+            const statusBadge = (status) => {
+                let colorClass = '';
+                let text = '';
+                switch(status) {
+                    case 'active': colorClass = 'bg-blue-100 text-blue-800'; text = 'Active'; break;
+                    case 'claimed': colorClass = 'bg-yellow-100 text-yellow-800'; text = 'Claimed'; break;
+                    case 'resolved': colorClass = 'bg-green-100 text-green-800'; text = 'Resolved'; break;
+                    case 'archived': colorClass = 'bg-gray-100 text-gray-800'; text = 'Archived'; break;
+                    default: colorClass = 'bg-gray-100 text-gray-800'; text = 'Unknown'; break;
+                }
+                return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClass}">${text}</span>`;
+            };
+
+            return `
+                <div class="bg-white rounded-lg shadow-md overflow-hidden border ${item.type === 'lost' ? 'border-red-200' : 'border-blue-200'}">
+                    <img src="${item.image_url ? item.image_url : 'https://via.placeholder.com/400x300?text=No+Image'}" 
+                         alt="${item.name}" class="w-full h-48 object-cover object-center"> <div class="p-3">
+                        <h4 class="text-lg font-semibold text-gray-800 mb-1">${item.name} (${item.type.toUpperCase()})</h4>
+                        <p class="text-xs text-gray-600 mb-2">Posted by ${item.user_name}</p>
+                        ${statusBadge(item.status)}
+                        <div class="mt-3 flex flex-wrap gap-2">
+                             ${(item.status === 'active' || item.status === 'claimed') ? `
+                                 <button data-item-id="${item.id}" data-status="resolved" class="update-item-status-btn bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1 rounded">Mark Resolved</button>
+                                 <button data-item-id="${item.id}" data-status="archived" class="update-item-status-btn bg-gray-500 hover:bg-gray-600 text-white text-xs px-2 py-1 rounded">Archive</button>
+                             ` : ''}
+                             ${item.status === 'archived' ? `
+                                 <button data-item-id="${item.id}" data-status="active" class="update-item-status-btn bg-blue-500 hover:bg-blue-600 text-white text-xs px-2 py-1 rounded">Unarchive</button>
+                             ` : ''}
+                             ${item.status === 'resolved' ? `
+                                 <button data-item-id="${item.id}" data-status="active" class="update-item-status-btn bg-yellow-500 hover:bg-yellow-600 text-white text-xs px-2 py-1 rounded">Unresolve</button>
+                             ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Helper to create claim card for admin (UPDATED for larger image)
+        function createAdminClaimCard(claim) {
+            const statusBadge = (status) => {
+                let colorClass = '';
+                let text = '';
+                switch(status) {
+                    case 'pending': colorClass = 'bg-yellow-100 text-yellow-800'; text = 'Pending'; break;
+                    case 'approved': colorClass = 'bg-green-100 text-green-800'; text = 'Approved'; break;
+                    case 'rejected': colorClass = 'bg-red-100 text-red-800'; text = 'Rejected'; break;
+                    default: colorClass = 'bg-gray-100 text-gray-800'; text = 'Unknown'; break;
+                }
+                return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClass}">${text}</span>`;
+            };
+
+            return `
+                <div class="bg-blue-50 p-4 rounded-lg shadow-sm border border-blue-200 flex">
+                    <img src="${claim.image_url ? claim.image_url : 'https://via.placeholder.com/80x80?text=Item'}" 
+                         alt="${claim.item_name}" class="w-20 h-20 object-cover rounded-md mr-4 flex-shrink-0">
+                    <div class="flex-grow">
+                        <h4 class="font-semibold text-gray-800">${claim.item_name} (ID: ${claim.item_id})</h4>
+                        <p class="text-sm text-gray-600">Claimed by: ${claim.claimer_name} (${claim.claimer_email})</p>
+                        <p class="text-sm text-gray-700 mb-2"><strong>Proof:</strong> ${claim.proof_details}</p>
+                        <div class="flex justify-between items-center text-sm">
+                            ${statusBadge(claim.claim_status)}
+                            <div class="flex gap-2">
+                                ${claim.claim_status === 'pending' ? `
+                                    <button data-claim-id="${claim.id}" data-status="approved" class="update-claim-status-btn bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs">Approve</button>
+                                    <button data-claim-id="${claim.id}" data-status="rejected" class="update-claim-status-btn bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs">Reject</button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Attach event listeners for update buttons
+        function attachAdminClaimEventListeners() {
+            document.querySelectorAll('.update-claim-status-btn').forEach(button => {
+                button.addEventListener('click', async (event) => {
+                    const claimId = event.target.dataset.claimId;
+                    const status = event.target.dataset.status;
+                    await updateStatus('claim_status', claimId, status);
+                });
+            });
+            document.querySelectorAll('.update-item-status-btn').forEach(button => {
+                button.addEventListener('click', async (event) => {
+                    const itemId = event.target.dataset.itemId;
+                    const status = event.target.dataset.status;
+                    await updateStatus('item_status', itemId, status);
+                });
+            });
+        }
+
+        // Generic function to update status
+        async function updateStatus(actionType, id, status) {
+            const formData = new FormData();
+            formData.append('action_type', actionType);
+            formData.append('status', status);
+            if (actionType === 'claim_status') {
+                formData.append('claim_id', id);
+            } else {
+                formData.append('item_id', id);
+            }
+
+            try {
+                const response = await fetch('php/update_claim_status.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json(); 
+                if (data.success) {
+                    alert(data.message);
+                    loadAdminDashboard(); // Reload data after update
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error updating status:', error);
+                alert('An error occurred during status update.');
+            }
+        }
+        // Event listener for the new status filter button
+        document.getElementById('applyStatusFilterBtn').addEventListener('click', loadAdminDashboard);
+    </script>
+</body>
+</html>

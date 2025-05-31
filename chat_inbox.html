@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Inbox - UMT L&F Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        /* No custom CSS styles are needed here anymore, rely purely on Tailwind */
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-900 font-sans flex flex-col min-h-screen"> 
+    <nav class="bg-indigo-600 p-4 shadow-md flex-shrink-0">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="user_dashboard.html" class="text-white text-2xl font-bold tracking-wide">UMT L&F Portal</a>
+            <div class="flex space-x-4 items-center">
+                <a href="lost_items.html" class="text-white hover:text-indigo-100 transition duration-150 py-2 px-3 rounded-md hover:bg-indigo-700">Lost Items</a>
+                <a href="found_items.html" class="text-white hover:text-indigo-100 transition duration-150 py-2 px-3 rounded-md hover:bg-indigo-700">Found Items</a>
+                <a href="post_lost.html" class="bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-2 px-4 rounded-md transition duration-150 shadow-sm">Report Lost</a>
+                <a href="post_found.html" class="bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-2 px-4 rounded-md transition duration-150 shadow-sm">Report Found</a>
+                <span id="userNameDisplay" class="text-white font-medium ml-4"></span>
+                <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md transition duration-150 shadow-sm">Logout</button>
+            </div>
+        </div>
+    </nav>
+    <main class="flex-grow flex flex-col p-0"> 
+        <div class="flex-grow bg-white shadow-xl overflow-hidden flex h-full"> <div class="w-80 flex-shrink-0 border-r border-gray-200 overflow-y-auto h-full"> <div class="p-4 bg-gray-50 border-b border-gray-200">
+                    <h2 class="text-xl font-semibold text-gray-800">Conversations</h2>
+                </div>
+                <div id="chatsList" class="flex flex-col">
+                    <p id="loadingChats" class="p-4 text-center text-gray-600">Loading chats...</p>
+                    <p id="noChats" class="p-4 text-center text-gray-600 hidden">You have no active chats yet.</p>
+                </div>
+            </div>
+
+            <div id="messagePanel" class="flex-grow flex flex-col h-full"> <div id="defaultChatView" class="flex flex-col items-center justify-center flex-grow text-gray-500 text-lg">
+                    <svg class="w-24 h-24 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+                    Select a chat to start messaging
+                </div>
+
+                <div id="activeChatView" class="hidden flex-col flex-grow h-full"> <div class="p-4 bg-indigo-50 border-b border-gray-200 flex items-center flex-shrink-0">
+                        <img id="chatPartnerImage" src="https://via.placeholder.com/40x40?text=P" alt="Partner" class="w-10 h-10 rounded-full mr-3 object-cover">
+                        <div>
+                            <h2 id="chatPartnerName" class="text-xl font-semibold text-gray-800"></h2>
+                            <p id="chatItemName" class="text-sm text-gray-600"></p>
+                        </div>
+                    </div>
+                    
+                    <div id="messagesArea" class="flex-grow overflow-y-auto p-4 scroll-smooth"> </div>
+                    <div class="p-4 border-t border-gray-200 flex gap-2 flex-shrink-0"> <input type="text" id="messageInput" placeholder="Type your message..."
+                               class="flex-grow px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-lg">
+                        <button id="sendMessageBtn"
+                                class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm transition duration-150">
+                            Send
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="globalMessage" class="mt-4 p-3 text-sm text-center rounded-md hidden"></div>
+    </main>
+
+    <script>
+        // Common Navbar JS (Copy from your other pages)
+        let currentUserId = null; 
+        let currentUserName = null; // Store user name for chat display
+        let activeClaimId = null; // Stores the ID of the currently open chat
+        let pollingInterval = null; // To store the interval ID for clearing
+
+        async function checkSessionAndNavbar() {
+            try {
+                const response = await fetch('php/check_session.php');
+                const data = await response.json();
+                const userNameDisplay = document.getElementById('userNameDisplay');
+                const logoutBtn = document.getElementById('logoutBtn');
+                
+                if (data.loggedIn) {
+                    currentUserId = data.userId; // Store ID
+                    currentUserName = data.userName; // Store name
+                    userNameDisplay.textContent = `Hello, ${data.userName}!`;
+                    logoutBtn.style.display = 'inline-block';
+                    loadActiveChats(); // Load chats when logged in
+                } else {
+                    currentUserId = null;
+                    currentUserName = null;
+                    userNameDisplay.textContent = '';
+                    logoutBtn.style.display = 'none';
+                    if (!['login.html', 'register.html'].includes(window.location.pathname.split('/').pop())) {
+                        window.location.href = 'login.html'; // Redirect if not logged in
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking session:', error);
+                if (!['login.html', 'register.html'].includes(window.location.pathname.split('/').pop())) {
+                    window.location.href = 'login.html';
+                }
+            }
+        }
+        checkSessionAndNavbar();
+
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            window.location.href = 'php/logout.php';
+        });
+
+        // Chat Inbox Specific JavaScript
+        const chatsListContainer = document.getElementById('chatsList');
+        const loadingChats = document.getElementById('loadingChats');
+        const noChats = document.getElementById('noChats');
+        const defaultChatView = document.getElementById('defaultChatView');
+        const activeChatView = document.getElementById('activeChatView');
+        const chatPartnerName = document.getElementById('chatPartnerName');
+        const chatItemName = document.getElementById('chatItemName');
+        const chatPartnerImage = document.getElementById('chatPartnerImage');
+        const messagesArea = document.getElementById('messagesArea');
+        const messageInput = document.getElementById('messageInput');
+        const sendMessageBtn = document.getElementById('sendMessageBtn');
+        const globalMessageDiv = document.getElementById('globalMessage');
+
+        async function loadActiveChats() {
+            chatsListContainer.innerHTML = ''; // Clear previous content
+            loadingChats.classList.remove('hidden');
+            noChats.classList.add('hidden');
+
+            try {
+                const response = await fetch('php/get_all_active_chats.php');
+                const data = await response.json();
+
+                if (data.success && data.chats.length > 0) {
+                    data.chats.forEach(chat => {
+                        chatsListContainer.innerHTML += createChatListItem(chat);
+                    });
+                    attachChatListItemListeners(); // Attach click listeners after rendering
+                } else {
+                    noChats.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error loading active chats:', error);
+                noChats.textContent = 'Failed to load chats. Please try again.';
+                noChats.classList.remove('hidden');
+            } finally {
+                loadingChats.classList.add('hidden');
+            }
+        }
+
+        // Helper function to create a chat list item (left panel)
+        function createChatListItem(chat) {
+            const partnerName = chat.other_participant_name;
+            const itemTypeLabel = chat.item_type === 'lost' ? 'Lost' : 'Found';
+
+            return `
+                <div class="chat-list-item px-4 py-3 border-b border-gray-200 cursor-pointer hover:bg-gray-100 flex items-center transition duration-200" data-claim-id="${chat.claim_id}" 
+                     data-partner-name="${partnerName}" 
+                     data-item-name="${chat.item_name}"
+                     data-item-image="${chat.item_image_url || 'https://via.placeholder.com/60x60?text=P'}">
+                    <img src="${chat.item_image_url || 'https://via.placeholder.com/60x60?text=P'}" 
+                         alt="${chat.item_name}" class="w-12 h-12 rounded-full mr-4 object-cover flex-shrink-0">
+                    <div class="flex-grow">
+                        <h3 class="text-lg font-semibold text-gray-800">${partnerName}</h3>
+                        <p class="text-sm text-gray-600">Re: ${chat.item_name} (${itemTypeLabel})</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Attach listeners to chat list items
+        function attachChatListItemListeners() {
+            document.querySelectorAll('.chat-list-item').forEach(item => {
+                item.addEventListener('click', (event) => {
+                    // Remove active class from previous item
+                    const currentActive = document.querySelector('.chat-list-item.active-chat');
+                    if (currentActive) {
+                        currentActive.classList.remove('active-chat');
+                    }
+                    // Add active class to clicked item
+                    item.classList.add('active-chat');
+
+                    const selectedClaimId = item.dataset.claimId;
+                    const partnerName = item.dataset.partnerName;
+                    const itemName = item.dataset.itemName;
+                    const itemImage = item.dataset.itemImage;
+                    
+                    openChat(selectedClaimId, partnerName, itemName, itemImage);
+                });
+            });
+        }
+
+        // Function to open a specific chat conversation (right panel)
+        function openChat(claimIdToOpen, partnerName, itemName, itemImage) {
+            activeClaimId = claimIdToOpen; // Set the active claim ID for polling
+
+            // Update chat header
+            chatPartnerName.textContent = partnerName;
+            chatItemName.textContent = itemName;
+            chatPartnerImage.src = itemImage;
+
+            // Show active chat view, hide default view
+            defaultChatView.classList.add('hidden');
+            activeChatView.classList.remove('hidden');
+
+            // Clear previous messages and loading indicator
+            messagesArea.innerHTML = ''; 
+            messagesArea.innerHTML = '<p class="text-center text-gray-500" id="chatLoadingMessages">Loading messages...</p>';
+
+            // Clear any existing polling interval and start a new one for this chat
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+            }
+            pollingInterval = setInterval(fetchMessages, 1500); // Poll every 1.5 seconds
+
+            // Fetch messages immediately for the newly opened chat
+            fetchMessages();
+
+            // Attach send message event listener (ensure it's only attached once)
+            sendMessageBtn.onclick = sendMessage; // Reassign to clear old listeners if any
+            messageInput.onkeypress = function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            };
+
+            // Clean up interval when navigating away from this page
+            window.addEventListener('beforeunload', () => {
+                if (pollingInterval) clearInterval(pollingInterval);
+            });
+        }
+
+        // Function to fetch messages for the active chat
+        async function fetchMessages() {
+            if (!activeClaimId) {
+                // This should not happen if openChat is called correctly
+                console.error("No active claim ID set for fetching messages.");
+                messagesArea.innerHTML = `<p class="text-center text-red-500">Error: Select a chat to view messages.</p>`;
+                return;
+            }
+            const chatLoadingMessages = document.getElementById('chatLoadingMessages');
+            if (chatLoadingMessages) chatLoadingMessages.classList.remove('hidden'); // Show loading on subsequent polls if needed
+
+            try {
+                const response = await fetch(`php/get_messages.php?claim_id=${activeClaimId}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    messagesArea.innerHTML = ''; // Clear for re-render
+
+                    data.messages.forEach(msg => {
+                        const messageElement = document.createElement('div');
+                        // MODIFIED: Ensure sent messages align right and received messages align left
+                        const isSent = msg.sender_id == currentUserId;
+                        // Outer message container is flex, inner bubble is inline-block to wrap content
+                        // justify-end/justify-start aligns the message bubble within the flex container
+                        messageElement.className = `message flex mb-3 ${isSent ? 'justify-end' : 'justify-start'}`; 
+                        messageElement.innerHTML = `
+                            <div class="message-bubble ${isSent ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-900'} max-w-2xl px-4 py-2 rounded-lg">
+                                <div class="font-semibold text-xs mb-1 ${isSent ? 'text-right' : 'text-left'}">${isSent ? 'You' : msg.sender_name}</div>
+                                ${msg.message_text}
+                                <div class="text-xs mt-1 text-gray-500 ${isSent ? 'text-right' : 'text-left'}">${new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                            </div>
+                        `;
+                        messagesArea.appendChild(messageElement);
+                    });
+                    
+                    // Scroll to bottom only if new messages added or chat was at bottom
+                    const wasAtBottom = messagesArea.scrollHeight - messagesArea.clientHeight <= messagesArea.scrollTop + 1; // +1 to allow for floating point
+                    if (data.messages.length > 0 && wasAtBottom) {
+                        messagesArea.scrollTop = messagesArea.scrollHeight; 
+                    } else if (data.messages.length === 0) {
+                        messagesArea.innerHTML = `<p class="text-center text-gray-500">No messages yet. Start the conversation!</p>`;
+                    }
+                    
+                } else {
+                    messagesArea.innerHTML = `<p class="text-center text-red-500">${data.message || 'Failed to load messages.'}</p>`;
+                }
+            } catch (error) {
+                console.error('Error fetching messages:', error);
+                messagesArea.innerHTML = `<p class="text-center text-red-500">Error loading chat. Please refresh.</p>`;
+            } finally {
+                const chatLoadingMessages = document.getElementById('chatLoadingMessages');
+                if (chatLoadingMessages) chatLoadingMessages.classList.add('hidden'); // Ensure loading indicator is hidden
+            }
+        }
+
+        // Function to send message
+        async function sendMessage() {
+            const messageText = messageInput.value.trim();
+
+            if (!messageText) {
+                globalMessageDiv.textContent = 'Message cannot be empty.';
+                globalMessageDiv.className = 'mt-4 p-3 text-sm text-center rounded-md bg-red-100 text-red-700';
+                globalMessageDiv.classList.remove('hidden');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('claim_id', activeClaimId);
+            formData.append('message_text', messageText);
+
+            try {
+                const response = await fetch('php/send_message.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    messageInput.value = ''; // Clear input
+                    fetchMessages(); // Reload messages to show new message
+                    globalMessageDiv.classList.add('hidden'); // Hide any previous error message
+                } else {
+                    globalMessageDiv.textContent = data.message;
+                    globalMessageDiv.className = 'mt-4 p-3 text-sm text-center rounded-md bg-red-100 text-red-700';
+                    globalMessageDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error sending message:', error);
+                globalMessageDiv.textContent = 'An error occurred while sending message.';
+                globalMessageDiv.className = 'mt-4 p-3 text-sm text-center rounded-md bg-red-100 text-red-700';
+                globalMessageDiv.classList.remove('hidden');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - Lost & Found</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        
+        .contact-container {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        
+        .contact-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .contact-header h1 {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            position: relative;
+            display: inline-block;
+            margin-top: 3rem;
+        }
+        
+        .contact-header h1::after {
+            content: '';
+            position: absolute;
+            width: 70%;
+            height: 4px;
+            /* background: linear-gradient(90deg, #3498db, #9b59b6); */
+            background: red;
+            bottom: -10px;
+            left: 15%;
+            border-radius: 2px;
+        }
+        
+        .contact-header p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .contact-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: center;
+        }
+        
+        .contact-info {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .contact-info:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+        
+        .contact-info h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .contact-info h2 i {
+            margin-right: 15px;
+            color: red;
+        }
+        
+        .info-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+        
+        .info-icon {
+            width: 50px;
+            height: 50px;
+            background: #e8f4fc;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: red;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .info-item:hover .info-icon {
+            background: red;
+            color: white;
+            transform: rotate(15deg) scale(1.1);
+        }
+        
+        .info-text h3 {
+            color: #2c3e50;
+            margin-bottom: 5px;
+            font-size: 1.2rem;
+        }
+        
+        .info-text p {
+            color: #7f8c8d;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+
+        .img_con{
+            width: 26rem;
+            border-radius: 1rem;
+             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+          
+        
+        .img_con:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+        
+       
+
+        
+        
+        
+        .contact-image {
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .contact-image img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .contact-image img:hover {
+            transform: scale(1.02);
+        }
+        
+        @media (max-width: 768px) {
+            .contact-content {
+                flex-direction: column;
+            }
+            
+            .contact-info, .contact-form {
+                min-width: 100%;
+            }
+        }
+
+
+
+
+        header {
+    padding: 20px 0;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    background-color: white;
+    z-index: 100;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.header-scrolled {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    padding: 15px 0;
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    font-weight: 700;
+    font-size: 24px;
+    text-decoration: none;
+    color: var(--text);
+}
+
+#logopic {
+    height: 50px;
+    margin-left:4rem;
+}
+
+nav ul {
+    display: flex;
+    align-items: center;
+
+    list-style: none;
+    gap: 30px;
+    margin-right: 8rem;
+}
+
+
+
+nav a {
+    text-decoration: none;
+    color: var(--text);
+    font-weight: 500;
+    font-size: 15px;
+    transition: color 0.2s;
+    position: relative;
+    /* margin-right: 5rem; */
+    
+}
+
+nav a:hover {
+    color: var(--primary);
+}
+
+nav a:after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    background: var(--primary);
+    bottom: -5px;
+    left: 0;
+    transition: width 0.3s ease;
+}
+
+
+
+.submit-btn{
+    display: flex;
+    align-items: center;
+    margin-left: 8rem;
+    gap: 30px;
+}
+ nav #login{
+     padding: 0.5rem 1rem;
+    color: rgb(196, 10, 10);
+    background-color: rgb(249, 251, 253);
+    font-size: 1rem;
+    border: 1px solid rgb(243, 197, 206);
+    border-radius: 5px;
+    cursor: pointer;
+}
+ nav #login:hover{
+    background-color: antiquewhite;
+ }
+
+
+nav #Register{
+      padding: 0.5rem 0.8rem;
+    color: white;
+    background-color: rgb(255, 60, 60);
+    font-size: 1rem;
+    border: 1px solid rgb(89, 76, 52);
+    border-radius: 5px;
+    cursor: pointer;
+}
+ nav #Register:hover{
+       background-color: red;
+ }
+
+ .con_a{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+      list-style: none;
+    gap: 30px;
+    margin-right: 8rem;
+ }
+
+
+
+ 
+    /* .container_footer {
+    padding: 60px 0 30px;
+    background-color: var(--bg);
+} */
+/* 
+.footer-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 40px;
+}
+
+.footer-col {
+    flex: 1;
+    min-width: 200px;
+}
+
+.footer-col h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.footer-col ul {
+    list-style: none;
+}
+
+.footer-col li {
+    margin-bottom: 12px;
+}
+
+.footer-col a {
+    text-decoration: none;
+    color: var(--text-light);
+    transition: color 0.2s;
+}
+
+.footer-col a:hover {
+    color: var(--primary);
+}
+
+.social-links {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.social-links a {
+    color: var(--text-light);
+    font-size: 18px;
+    transition: all 0.3s ease;
+}
+
+.social-links a:hover {
+    color: var(--primary);
+    transform: translateY(-3px);
+}
+
+.copyright {
+    margin-top: 60px;
+    text-align: center;
+    color: var(--text-light);
+    font-size: 14px;
+} */
+
+
+
+/* Footer Styles */
+footer {
+    background-color: #f8f9fa;
+    padding: 50px 0 20px;
+    font-family: 'Arial', sans-serif;
+    color:grey;
+    margin-top: 50px;
+}
+
+.container_footer {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+.footer-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin-bottom: 30px;
+}
+
+.footer-col {
+    flex: 1;
+    min-width: 200px;
+    margin-bottom: 30px;
+    padding: 0 15px;
+}
+
+.footer-col:first-child {
+    flex: 1.5;
+}
+
+#logo {
+    display: block;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    text-decoration: none;
+    margin-bottom: 15px;
+    width: 7rem;
+}
+
+.footer-col p {
+    margin: 15px 0;
+    line-height: 1.6;
+    color: #666;
+}
+
+.social-links {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.social-links a {
+    color:grey;
+    font-size: 20px;
+    transition: color 0.3s;
+}
+
+.social-links a:hover {
+    color: rgb(237, 143, 159);
+}
+
+.footer-col h3 {
+    font-size: 15px;
+    margin-bottom: 20px;
+    position: relative;
+    color:rgb(130, 129, 129);
+
+}
+
+.footer-col ul {
+    list-style: none;
+    padding: 0;
+}
+
+.footer-col ul li {
+    margin-bottom: 10px;
+}
+
+.footer-col ul li a {
+    color: #666;
+    text-decoration: none;
+    transition: color 0.3s;
+    display: inline-block;
+}
+
+.footer-col ul li a:hover {
+    color:rgb(231, 139, 154);
+    transform: translateX(5px);
+}
+
+.copyright {
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid #ddd;
+    color: #666;
+    font-size: 14px;
+}
+
+.copyright a {
+    color: #666;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.copyright a:hover {
+    color: #007bff;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .footer-col {
+        flex: 100%;
+        margin-bottom: 30px;
+    }
+    
+    .footer-col:first-child {
+        flex: 100%;
+    }
+}
+
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+
+      <header id="header">
+        <div class="container header-container">
+            <div  class="logo">
+              <a href="#" id="#hero1"> <img  id="logopic"src="img/logo.png" alt=""> </a> 
+</div>
+            <nav>
+                <ul id="nav-menu">
+                  
+                    <li><a href="index.html">Home</a></li>                    
+                    <li><a href="contact_us.html">Contact us</a></li>
+                    <li><a href="demo.html">Demo Video</a></li>
+
+                    <div class="submit-btn">
+                        <a href="login.html" id="login" >Login</a>
+                        <a  href="register.html" id="Register">Register</a>
+                     </div>
+                </ul>
+            
+                
+            </nav>
+           
+        </div>
+
+      
+
+    </header>
+
+
+    <div class="contact-container">
+        <div class="contact-header">
+            <h1>Contact Our Lost & Found Team</h1>
+            <p>Have you lost something valuable or found an item that might belong to someone else? Reach out to us and we'll help reunite lost items with their owners.</p>
+        </div>
+        
+        <div class="contact-content">
+            <div class="contact-info">
+                <h2><i class="fas fa-hands-helping"></i> How Can We Help?</h2>
+                
+                <div class="info-item">
+                    <div class="info-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <div class="info-text">
+                        <h3>Our Location</h3>
+                        <p>Lahore , Johar Town 123 </p>
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-icon">
+                        <i class="fas fa-phone-alt"></i>
+                    </div>
+                    <div class="info-text">
+                        <h3>Call Us</h3>
+                        <p>+92 304 7772812 (General Inquiries)</p>
+                        <p>+92 300 7418058 (Lost Item Reports)</p>
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="info-text">
+                        <h3>Email Us</h3>
+                        <p>iqbalusama440@gmail.com (General Support)</p>
+                        <p>zaeemulhassan@gmail.com (Item Reports)</p>
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="info-text">
+                        <h3>Working Hours</h3>
+                        <p>24/7 hours</p>
+                        <p>Use every time</p>
+                      
+                    </div>
+                </div>
+            </div>
+            
+            <div class="img">
+                <img class="img_con" src="img/images.jpg" alt=" "  >
+               
+            </div>
+        </div>
+        
+        <!-- <div class="contact-image">
+            <img src="https://images.unsplash.com/photo-1589998059171-988d887df646?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80" alt="Lost and Found Assistance">
+        </div> -->
+    </div>
+
+     <footer>
+        <div class="container_footer">
+            <div class="footer-container">
+                <div class="footer-col">
+                    <a href="#" class="logo">
+                        <img id="logo" src="img/logo.png" alt="" >
+                    </a>
+                    <p>Helping students  since 2023.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+                <div class="footer-col">
+                    <h3>Trust & Found</h3>
+                    <ul>
+                        <li><a href="#">how it works</a></li>
+                           <li><a href="#">Report Lost Item</a></li>
+                          <li><a href="#">Claim Found Item</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h3>Resources</h3>
+                    <ul>
+                           <li><a href="#">User Guide</a></li>
+                          <li><a href="#">Community</a></li>
+                           <li><a href="#">Support</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h3>Company</h3>
+                    <ul>
+                        <li><a href="#">About Us</a></li>
+                        <!-- <li><a href="#">Careers</a></li> -->
+                        <li><a href="#">Contact</a></li>
+                        <!-- <li><a href="#">Press</a></li> -->
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                &copy; 2023 Notely. All rights reserved. | <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

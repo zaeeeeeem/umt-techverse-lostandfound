@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Found Item - Lost & Found Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-900 font-sans">
+    <nav class="bg-indigo-600 p-4 shadow-md sticky top-0 z-10">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="user_dashboard.html" class="text-white text-2xl font-bold tracking-wide">UMT L&F Portal</a>
+            <div class="flex space-x-4 items-center">
+                <a href="lost_items.html" class="text-white hover:text-indigo-100 transition duration-150 py-2 px-3 rounded-md hover:bg-indigo-700">Lost Items</a>
+                <a href="found_items.html" class="text-white hover:text-indigo-100 transition duration-150 py-2 px-3 rounded-md hover:bg-indigo-700">Found Items</a>
+                <a href="post_lost.html" class="bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-2 px-4 rounded-md transition duration-150 shadow-sm">Report Lost</a>
+                <a href="post_found.html" class="bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-2 px-4 rounded-md transition duration-150 shadow-sm">Report Found</a>
+                <span id="userNameDisplay" class="text-white font-medium ml-4"></span>
+                <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md transition duration-150 shadow-sm">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto p-6">
+        <div class="bg-white p-8 rounded-lg shadow-xl max-w-2xl mx-auto">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Report a Found Item</h2>
+            <p class="text-center text-gray-600 mb-8">Help reunite someone with their belongings! Provide details about the item you've found.</p>
+
+            <form id="foundItemForm" action="php/post_found.php" method="POST" enctype="multipart/form-data" class="space-y-6">
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700">Item Name</label>
+                    <input type="text" id="name" name="name" required
+                           class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                           placeholder="e.g., Black ID Card, Red Backpack">
+                </div>
+                <div>
+                    <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
+                    <input type="text" id="category" name="category" required
+                           class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                           placeholder="e.g., Documents, Electronics, Clothing">
+                </div>
+                <div>
+                    <label for="date_lost_found" class="block text-sm font-medium text-gray-700">Date Found</label>
+                    <input type="date" id="date_lost_found" name="date_lost_found" required
+                           class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                </div>
+                <div>
+                    <label for="location" class="block text-sm font-medium text-gray-700">Location Found</label>
+                    <input type="text" id="location" name="location" required
+                           class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                           placeholder="e.g., Near Main Gate, Lecture Hall 5, Dormitory A Lobby">
+                </div>
+                <div>
+                    <label for="description" class="block text-sm font-medium text-gray-700">Detailed Description</label>
+                    <textarea id="description" name="description" rows="4" required
+                              class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                              placeholder="e.g., Black rectangular ID card with 'Muhammad Ali' printed on it."></textarea>
+                </div>
+                <div>
+                    <label for="image" class="block text-sm font-medium text-gray-700">Upload Image (Highly Recommended)</label>
+                    <input type="file" id="image" name="image" accept="image/*"
+                           class="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-md cursor-pointer bg-gray-50 focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-500 file:text-white hover:file:bg-indigo-600">
+                </div>
+                <button type="submit"
+                        class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">
+                    Report Found Item
+                </button>
+            </form>
+            <div id="message" class="mt-4 p-3 text-sm text-center rounded-md hidden"></div>
+        </div>
+    </main>
+
+    <script>
+        // Check session and update UI (same as post_lost.html)
+        async function checkSession() {
+            try {
+                const response = await fetch('php/check_session.php');
+                const data = await response.json();
+                const userNameDisplay = document.getElementById('userNameDisplay');
+                const logoutBtn = document.getElementById('logoutBtn');
+
+                if (data.loggedIn) {
+                    userNameDisplay.textContent = `Hello, ${data.userName}!`;
+                    logoutBtn.style.display = 'inline-block';
+                } else {
+                    userNameDisplay.textContent = '';
+                    logoutBtn.style.display = 'none';
+                    window.location.href = 'login.html';
+                }
+            } catch (error) {
+                console.error('Error checking session:', error);
+                window.location.href = 'login.html';
+            }
+        }
+        checkSession();
+
+        // Logout functionality (same as post_lost.html)
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            window.location.href = 'php/logout.php';
+        });
+
+        // Form submission handler (same as post_lost.html, just targetting foundItemForm)
+        document.getElementById('foundItemForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const form = event.target;
+            const formData = new FormData(form);
+            const messageDiv = document.getElementById('message');
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    messageDiv.textContent = data.message;
+                    messageDiv.className = 'mt-4 p-3 text-sm text-center rounded-md bg-green-100 text-green-700';
+                    form.reset();
+                } else {
+                    messageDiv.textContent = data.message;
+                    messageDiv.className = 'mt-4 p-3 text-sm text-center rounded-md bg-red-100 text-red-700';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                messageDiv.textContent = 'An error occurred. Please try again.';
+                messageDiv.className = 'mt-4 p-3 text-sm text-center rounded-md bg-red-100 text-red-700';
+            }
+            messageDiv.classList.remove('hidden');
+        });
+    </script>
+
+    <script>
+    async function checkSessionAndNavbar() {
+        try {
+            const response = await fetch('php/check_session.php');
+            const data = await response.json();
+            const userNameDisplay = document.getElementById('userNameDisplay');
+            const logoutBtn = document.getElementById('logoutBtn');
+            
+            if (data.loggedIn) {
+                userNameDisplay.textContent = `Hello, ${data.userName}!`;
+                logoutBtn.style.display = 'inline-block';
+            } else {
+                userNameDisplay.textContent = '';
+                logoutBtn.style.display = 'none';
+                // If not logged in and not on login/register page, redirect to login
+                if (!['login.html', 'register.html'].includes(window.location.pathname.split('/').pop())) {
+                    window.location.href = 'login.html';
+                }
+            }
+        } catch (error) {
+            console.error('Error checking session:', error);
+            // Redirect to login if session check fails
+            if (!['login.html', 'register.html'].includes(window.location.pathname.split('/').pop())) {
+                window.location.href = 'login.html';
+            }
+        }
+    }
+    checkSessionAndNavbar();
+
+    document.getElementById('logoutBtn').addEventListener('click', function() {
+        window.location.href = 'php/logout.php';
+    });
+</script>
+</body>
+</html>

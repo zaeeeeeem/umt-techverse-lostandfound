@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - UMT L&F Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-900 font-sans">
+    <nav class="bg-indigo-600 p-4 shadow-md sticky top-0 z-10">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="user_dashboard.html" class="text-white text-2xl font-bold tracking-wide">UMT L&F Portal</a>
+            <div class="flex space-x-4 items-center">
+                <a href="lost_items.html" class="text-white hover:text-indigo-100 transition duration-150 py-2 px-3 rounded-md hover:bg-indigo-700">Lost Items</a>
+                <a href="found_items.html" class="text-white hover:text-indigo-100 transition duration-150 py-2 px-3 rounded-md hover:bg-indigo-700">Found Items</a>
+                <a href="post_lost.html" class="bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-2 px-4 rounded-md transition duration-150 shadow-sm">Report Lost</a>
+                <a href="post_found.html" class="bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-2 px-4 rounded-md transition duration-150 shadow-sm">Report Found</a>
+                <span id="userNameDisplay" class="text-white font-medium ml-4"></span>
+                <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md transition duration-150 shadow-sm">Logout</button>
+            </div>
+        </div>
+    </nav>
+    <main class="container mx-auto p-6">
+        <h1 class="text-4xl font-extrabold text-gray-800 mb-8 text-center">My Dashboard</h1>
+
+        <div class="mb-8 text-center">
+            <a href="chat_inbox.html" class="inline-block bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-8 rounded-md shadow-lg text-lg transition duration-150 ease-in-out">
+                Go to My Chats
+            </a>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-white p-6 rounded-lg shadow-xl">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center justify-between">
+                    My Reported Lost Items
+                    <a href="post_lost.html" class="text-sm bg-green-500 hover:bg-green-600 text-white py-1 px-3 rounded-md transition duration-150">Report New Lost</a>
+                </h2>
+                <div id="myLostItemsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <p id="noMyLostItems" class="col-span-full text-center text-gray-600 hidden">You haven't reported any lost items yet.</p>
+                    </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-xl">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center justify-between">
+                    My Reported Found Items
+                    <a href="post_found.html" class="text-sm bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded-md transition duration-150">Report New Found</a>
+                </h2>
+                <div id="myFoundItemsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <p id="noMyFoundItems" class="col-span-full text-center text-gray-600 hidden">You haven't reported any found items yet.</p>
+                    </div>
+            </div>
+        </div>
+
+        <div class="mt-8 bg-white p-6 rounded-lg shadow-xl">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">My Claim Requests</h2>
+                <div id="myClaimRequestsList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <p id="noMyClaimRequests" class="col-span-full text-center text-gray-600 hidden">You haven't made any claim requests yet.</p>
+                    </div>
+            </div>
+
+            <div class="mt-8 bg-white p-6 rounded-lg shadow-xl">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Claims on My Items</h2>
+                <div id="claimsOnMyItemsList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <p id="noClaimsOnMyItems" class="col-span-full text-center text-gray-600 hidden">No one has claimed your found items yet.</p>
+                    </div>
+        </div>
+
+    </main>
+
+    <script>
+        let currentUserId = null;
+        
+        async function checkSessionAndNavbar() {
+            try {
+                const response = await fetch('php/check_session.php');
+                const data = await response.json();
+                const userNameDisplay = document.getElementById('userNameDisplay');
+                const logoutBtn = document.getElementById('logoutBtn');
+                
+                if (data.loggedIn) {
+                    userNameDisplay.textContent = `Hello, ${data.userName}!`;
+                    logoutBtn.style.display = 'inline-block';
+                    currentUserId = data.userId; // Store the userId
+                    loadMyItems(); // Load user-specific items
+                } else {
+                    userNameDisplay.textContent = '';
+                    logoutBtn.style.display = 'none';
+                    if (!['login.html', 'register.html'].includes(window.location.pathname.split('/').pop())) {
+                        window.location.href = 'login.html';
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking session:', error);
+                if (!['login.html', 'register.html'].includes(window.location.pathname.split('/').pop())) {
+                    window.location.href = 'login.html';
+                }
+            }
+        }
+        checkSessionAndNavbar();
+
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            window.location.href = 'php/logout.php';
+        });
+
+        // Dashboard specific JavaScript
+        async function loadMyItems() {
+            const myLostItemsGrid = document.getElementById('myLostItemsGrid');
+            const myFoundItemsGrid = document.getElementById('myFoundItemsGrid');
+            const myClaimRequestsList = document.getElementById('myClaimRequestsList'); // Get new element
+            const claimsOnMyItemsList = document.getElementById('claimsOnMyItemsList'); // Get new element
+
+            const noMyLostItems = document.getElementById('noMyLostItems');
+            const noMyFoundItems = document.getElementById('noMyFoundItems');
+            const noMyClaimRequests = document.getElementById('noMyClaimRequests'); // Get new element
+            const noClaimsOnMyItems = document.getElementById('noClaimsOnMyItems'); // Get new element
+            
+            myLostItemsGrid.innerHTML = '';
+            myFoundItemsGrid.innerHTML = '';
+            myClaimRequestsList.innerHTML = ''; // Clear
+            claimsOnMyItemsList.innerHTML = ''; // Clear
+
+            noMyLostItems.classList.add('hidden');
+            noMyFoundItems.classList.add('hidden');
+            noMyClaimRequests.classList.add('hidden'); // Hide
+            noClaimsOnMyItems.classList.add('hidden'); // Hide
+
+            try {
+                // Fetch lost items by user
+                const lostResponse = await fetch(`php/get_items.php?type=lost&user_id=${currentUserId}`);
+                const lostData = await lostResponse.json();
+                if (lostData.success && lostData.items.length > 0) {
+                    lostData.items.forEach(item => {
+                        myLostItemsGrid.innerHTML += createItemCard(item);
+                    });
+                } else {
+                    noMyLostItems.classList.remove('hidden');
+                }
+
+                // Fetch found items by user
+                const foundResponse = await fetch(`php/get_items.php?type=found&user_id=${currentUserId}`);
+                const foundData = await foundResponse.json();
+                if (foundData.success && foundData.items.length > 0) {
+                    foundData.items.forEach(item => {
+                        myFoundItemsGrid.innerHTML += createItemCard(item);
+                    });
+                } else {
+                    noMyFoundItems.classList.remove('hidden');
+                }
+
+                // Fetch claims made by current user
+                const myClaimsResponse = await fetch(`php/get_claims.php?type=my_claims`);
+                const myClaimsData = await myClaimsResponse.json();
+                if (myClaimsData.success && myClaimsData.claims.length > 0) {
+                    myClaimsData.claims.forEach(claim => {
+                        myClaimRequestsList.innerHTML += createMyClaimCard(claim);
+                    });
+                } else {
+                    noMyClaimRequests.classList.remove('hidden');
+                }
+
+                // Fetch claims on items posted by current user
+                const claimsOnMyItemsResponse = await fetch(`php/get_claims.php?type=claims_on_my_items`);
+                const claimsOnMyItemsData = await claimsOnMyItemsResponse.json();
+                if (claimsOnMyItemsData.success && claimsOnMyItemsData.claims.length > 0) {
+                    claimsOnMyItemsData.claims.forEach(claim => {
+                        claimsOnMyItemsList.innerHTML += createClaimOnMyItemCard(claim);
+                    });
+                    attachClaimActionListeners(); // Attach listeners for approve/reject
+                } else {
+                    noClaimsOnMyItems.classList.remove('hidden');
+                }
+
+            } catch (error) {
+                console.error('Error loading user items or claims:', error);
+            }
+        }
+
+        // Helper function to create a claim card for claims YOU made (for user dashboard)
+        function createMyClaimCard(claim) {
+            const statusBadge = (status) => {
+                let colorClass = '';
+                let text = '';
+                switch(status) {
+                    case 'pending': colorClass = 'bg-yellow-100 text-yellow-800'; text = 'Pending'; break;
+                    case 'approved': colorClass = 'bg-green-100 text-green-800'; text = 'Approved'; break;
+                    case 'rejected': colorClass = 'bg-red-100 text-red-800'; text = 'Rejected'; break;
+                    default: colorClass = 'bg-gray-100 text-gray-800'; text = 'Unknown'; break;
+                }
+                return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${colorClass}">${text}</span>`;
+            };
+
+            return `
+                <div class="bg-white p-4 rounded-lg shadow-sm border border-indigo-200 flex items-center gap-4">
+                    <img src="${claim.image_url ? claim.image_url : 'https://via.placeholder.com/60x60?text=Item'}" 
+                         alt="${claim.item_name}" class="w-16 h-16 object-cover rounded-md flex-shrink-0">
+                    <div class="flex-grow">
+                        <h4 class="font-semibold text-gray-800">${claim.item_name}</h4>
+                        <p class="text-sm text-gray-600">Claim Status: ${statusBadge(claim.claim_status)}</p>
+                        <p class="text-xs text-gray-500">Claimed on: ${new Date(claim.created_at).toLocaleDateString()}</p>
+                        <p class="text-xs text-gray-500">Finder: ${claim.finder_name}</p>
+                        ${claim.claim_status === 'approved' ? `
+                            <p class="text-xs text-green-600 mt-1">Contact finder: ${claim.finder_email}</p>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Helper function to create a claim card for claims ON YOUR items (for user dashboard)
+        function createClaimOnMyItemCard(claim) {
+            const statusBadge = (status) => {
+                let colorClass = '';
+                let text = '';
+                switch(status) {
+                    case 'pending': colorClass = 'bg-yellow-100 text-yellow-800'; text = 'Pending'; break;
+                    case 'approved': colorClass = 'bg-green-100 text-green-800'; text = 'Approved'; break;
+                    case 'rejected': colorClass = 'bg-red-100 text-red-800'; text = 'Rejected'; break;
+                    default: colorClass = 'bg-gray-100 text-gray-800'; text = 'Unknown'; break;
+                }
+                return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${colorClass}">${text}</span>`;
+            };
+
+            return `
+                <div class="bg-white p-4 rounded-lg shadow-sm border border-purple-200 flex items-center gap-4">
+                    <img src="${claim.image_url ? claim.image_url : 'https://via.placeholder.com/60x60?text=Item'}" 
+                         alt="${claim.item_name}" class="w-16 h-16 object-cover rounded-md flex-shrink-0">
+                    <div class="flex-grow">
+                        <h4 class="font-semibold text-gray-800">${claim.item_name} (ID: ${claim.item_id})</h4>
+                        <p class="text-sm text-gray-600">Claimer: ${claim.claimer_name}</p>
+                        <p class="text-xs text-gray-500">Claim Status: ${statusBadge(claim.claim_status)}</p>
+                        <p class="text-xs text-gray-500">Proof: ${claim.proof_details}</p>
+                        ${claim.claim_status === 'pending' ? `
+                            <div class="mt-2 flex gap-2">
+                                <button data-claim-id="${claim.id}" data-status="approved" class="claim-action-btn bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs">Approve</button>
+                                <button data-claim-id="${claim.id}" data-status="rejected" class="claim-action-btn bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs">Reject</button>
+                            </div>
+                        ` : ''}
+                        ${claim.claim_status === 'approved' ? `
+                            <p class="text-xs text-green-600 mt-1">Claimer contact: ${claim.claimer_email}</p>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Attach event listeners for claim actions (Approve/Reject)
+        function attachClaimActionListeners() {
+            document.querySelectorAll('.claim-action-btn').forEach(button => {
+                button.addEventListener('click', async (event) => {
+                    const claimId = event.target.dataset.claimId;
+                    const status = event.target.dataset.status;
+
+                    const formData = new FormData();
+                    formData.append('action_type', 'claim_status');
+                    formData.append('claim_id', claimId);
+                    formData.append('status', status);
+
+                    try {
+                        const response = await fetch('php/update_claim_status.php', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            alert(data.message);
+                            loadMyItems(); // Reload user dashboard data
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    } catch (error) {
+                        console.error('Error updating claim status:', error);
+                        alert('An error occurred during claim status update.');
+                    }
+                });
+            });
+        }
+
+        // Helper function to create an item card HTML
+        function createItemCard(item) {
+            const statusBadge = (status) => {
+                let colorClass = '';
+                let text = '';
+                switch(status) {
+                    case 'active': colorClass = 'bg-blue-100 text-blue-800'; text = 'Active'; break;
+                    case 'claimed': colorClass = 'bg-yellow-100 text-yellow-800'; text = 'Claimed'; break;
+                    case 'resolved': colorClass = 'bg-green-100 text-green-800'; text = 'Resolved'; break;
+                    case 'archived': colorClass = 'bg-gray-100 text-gray-800'; text = 'Archived'; break;
+                    default: colorClass = 'bg-gray-100 text-gray-800'; text = 'Unknown'; break;
+                }
+                return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClass}">${text}</span>`;
+            };
+
+            return `
+                <a href="item_detail.html?id=${item.id}" class="block bg-white rounded-lg shadow-sm hover:shadow-lg transition duration-200 ease-in-out overflow-hidden">
+                    <img src="${item.image_url ? item.image_url : 'https://via.placeholder.com/300x200?text=No+Image'}" 
+                         alt="${item.name}" class="w-full h-32 object-cover object-center">
+                    <div class="p-3">
+                        <h4 class="text-lg font-semibold text-gray-800 mb-1">${item.name}</h4>
+                        <p class="text-xs text-gray-600 mb-2">${item.location}</p>
+                        ${statusBadge(item.status)}
+                    </div>
+                </a>
+            `;
+        }
+    </script>
+</body>
+</html>

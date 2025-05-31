@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Item Details - UMT L&F Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-900 font-sans">
+    <nav class="bg-indigo-600 p-4 shadow-md sticky top-0 z-10">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="user_dashboard.html" class="text-white text-2xl font-bold tracking-wide">UMT L&F Portal</a>
+            <div class="flex space-x-4 items-center">
+                <a href="lost_items.html" class="text-white hover:text-indigo-100 transition duration-150 py-2 px-3 rounded-md hover:bg-indigo-700">Lost Items</a>
+                <a href="found_items.html" class="text-white hover:text-indigo-100 transition duration-150 py-2 px-3 rounded-md hover:bg-indigo-700">Found Items</a>
+                <a href="post_lost.html" class="bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-2 px-4 rounded-md transition duration-150 shadow-sm">Report Lost</a>
+                <a href="post_found.html" class="bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-2 px-4 rounded-md transition duration-150 shadow-sm">Report Found</a>
+                <span id="userNameDisplay" class="text-white font-medium ml-4"></span>
+                <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md transition duration-150 shadow-sm">Logout</button>
+            </div>
+        </div>
+    </nav>
+    <main class="container mx-auto p-6">
+        <div id="itemDetailContainer" class="bg-white p-8 rounded-lg shadow-xl max-w-4xl mx-auto flex flex-col md:flex-row gap-8">
+            <p id="loadingMessage" class="text-center text-gray-600 text-lg">Loading item details...</p>
+            <p id="errorMessage" class="text-center text-red-600 text-lg hidden">Error loading item details.</p>
+        </div>
+    </main>
+
+    <script>
+        async function checkSessionAndNavbar() {
+            try {
+                const response = await fetch('php/check_session.php');
+                const data = await response.json();
+                const userNameDisplay = document.getElementById('userNameDisplay');
+                const logoutBtn = document.getElementById('logoutBtn');
+                
+                if (data.loggedIn) {
+                    userNameDisplay.textContent = `Hello, ${data.userName}!`;
+                    logoutBtn.style.display = 'inline-block';
+                    currentUserId = data.userId; // Store the user ID here
+                } else {
+                    currentUserId = null; // Ensure it's null if not logged in
+                    userNameDisplay.textContent = '';
+                    logoutBtn.style.display = 'none';
+                    if (!['login.html', 'register.html'].includes(window.location.pathname.split('/').pop())) {
+                        window.location.href = 'login.html';
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking session:', error);
+                if (!['login.html', 'register.html'].includes(window.location.pathname.split('/').pop())) {
+                    window.location.href = 'login.html';
+                }
+            }
+        }
+        checkSessionAndNavbar();
+
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            window.location.href = 'php/logout.php';
+        });
+
+        // Item Detail Specific JavaScript
+        const itemDetailContainer = document.getElementById('itemDetailContainer');
+        const loadingMessage = document.getElementById('loadingMessage');
+        const errorMessage = document.getElementById('errorMessage');
+
+        async function fetchItemDetails() {
+            loadingMessage.classList.remove('hidden');
+            errorMessage.classList.add('hidden');
+            itemDetailContainer.innerHTML = ''; // Clear previous content
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const itemId = urlParams.get('id');
+
+            if (!itemId) {
+                errorMessage.textContent = 'No item ID provided.';
+                errorMessage.classList.remove('hidden');
+                loadingMessage.classList.add('hidden');
+                return;
+            }
+
+            try {
+                const response = await fetch(`php/get_item_details.php?id=${itemId}`);
+                const data = await response.json();
+
+                if (data.success && data.item) {
+                    loadingMessage.classList.add('hidden');
+                    const item = data.item;
+
+                    const foundItemContactButton = item.type === 'lost' && currentUserId && item.user_id != currentUserId ?
+                    `<button id="foundItemContactBtn" class="mt-6 w-full md:w-auto flex justify-center py-3 px-6 border border-transparent rounded-md shadow-sm text-lg font-semibold text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition duration-150 ease-in-out">
+                        I Found This Item / Contact Owner
+                    </button>
+                    <div id="ownerContactInfo" class="mt-4 p-3 text-sm rounded-md bg-purple-100 text-purple-800 hidden">
+                        <strong>Owner Contact:</strong> <span id="ownerEmail">${item.user_email}</span>
+                        <p class="text-xs text-gray-600 mt-1">Please contact them directly to coordinate return.</p>
+                    </div>` : '';
+
+                    const claimButton = item.type === 'found' && item.status === 'active' && currentUserId && item.user_id != currentUserId ? // Only show if found, active, logged in, and not own item
+                        `<button id="claimItemBtn" class="mt-6 w-full md:w-auto flex justify-center py-3 px-6 border border-transparent rounded-md shadow-sm text-lg font-semibold text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition duration-150 ease-in-out">
+                            Claim This Item
+                        </button>` : '';
+
+                    const statusBadge = (status) => {
+                        let colorClass = '';
+                        let text = '';
+                        switch(status) {
+                            case 'active': colorClass = 'bg-blue-100 text-blue-800'; text = 'Active'; break;
+                            case 'claimed': colorClass = 'bg-yellow-100 text-yellow-800'; text = 'Claimed (Pending Approval)'; break;
+                            case 'resolved': colorClass = 'bg-green-100 text-green-800'; text = 'Resolved'; break;
+                            case 'archived': colorClass = 'bg-gray-100 text-gray-800'; text = 'Archived'; break;
+                            default: colorClass = 'bg-gray-100 text-gray-800'; text = 'Unknown'; break;
+                        }
+                        return `<span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${colorClass}">${text}</span>`;
+                    };
+
+                    itemDetailContainer.innerHTML = `
+                        <div class="md:w-1/2">
+                            <img src="${item.image_url ? item.image_url : 'https://via.placeholder.com/600x450?text=No+Image'}" 
+                                 alt="${item.name}" class="w-full h-auto rounded-lg shadow-lg object-cover">
+                        </div>
+                        <div class="md:w-1/2 flex flex-col justify-between">
+                            <div>
+                                <h1 class="text-4xl font-extrabold text-gray-800 mb-3">${item.name}</h1>
+                                <div class="mb-4">
+                                    ${statusBadge(item.status)}
+                                </div>
+                                <p class="text-lg text-gray-700 mb-2"><strong>Category:</strong> ${item.category}</p>
+                                <p class="text-lg text-gray-700 mb-2"><strong>${item.type === 'lost' ? 'Last Known Location' : 'Found Location'}:</strong> ${item.location}</p>
+                                <p class="text-lg text-gray-700 mb-2"><strong>Date ${item.type === 'lost' ? 'Lost' : 'Found'}:</strong> ${item.date_lost_found}</p>
+                                <p class="text-gray-700 leading-relaxed mt-4">${item.description}</p>
+                            </div>
+                            <div class="mt-6 pt-6 border-t border-gray-200">
+                                <p class="text-sm text-gray-500">Posted by: <span class="font-medium text-gray-700">${item.user_name}</span> on ${new Date(item.created_at).toLocaleDateString()}</p>
+
+                                ${item.type === 'found' ? claimButton : ''}  ${item.type === 'lost' ? foundItemContactButton : ''}
+                                <div id="claimMessage" class="mt-4 p-3 text-sm text-center rounded-md hidden"></div>
+                            </div>
+                        </div>
+                    `;
+
+                    if (item.type === 'lost' && currentUserId) { // Ensure button exists and user is logged in
+                        const foundItemContactBtn = document.getElementById('foundItemContactBtn');
+                        if (foundItemContactBtn) { // Check if the button actually exists (it might not if not logged in)
+                            foundItemContactBtn.addEventListener('click', () => {
+                                const ownerContactInfo = document.getElementById('ownerContactInfo');
+                                if (ownerContactInfo) {
+                                    ownerContactInfo.classList.remove('hidden'); // Show the contact info
+                                    foundItemContactBtn.classList.add('hidden'); // Hide the button after clicked
+                                }
+                            });
+                        }
+                    }
+
+                    // Add event listener for the claim button if it exists
+                    if (item.type === 'found' && item.status === 'active') {
+                        document.getElementById('claimItemBtn').addEventListener('click', async () => {
+                            // Prompt for proof details for the demo
+                            const proof = prompt("To claim this item, please provide proof of ownership (e.g., unique markings, contents, purchase details):");
+                            if (proof) {
+                                const claimFormData = new FormData();
+                                claimFormData.append('item_id', item.id);
+                                claimFormData.append('proof_details', proof);
+
+                                try {
+                                    const claimResponse = await fetch('php/claim_item.php', { // We'll create this PHP in next phase
+                                        method: 'POST',
+                                        body: claimFormData
+                                    });
+                                    const claimData = await claimResponse.json();
+                                    const claimMessageDiv = document.getElementById('claimMessage');
+
+                                    if (claimData.success) {
+                                        claimMessageDiv.textContent = 'Claim request submitted! The finder will be notified.';
+                                        claimMessageDiv.className = 'mt-4 p-3 text-sm text-center rounded-md bg-green-100 text-green-700';
+                                        // Update UI to show item as claimed
+                                        item.status = 'claimed'; // Optimistically update
+                                        fetchItemDetails(); // Re-render details to update status badge/button
+                                    } else {
+                                        claimMessageDiv.textContent = claimData.message;
+                                        claimMessageDiv.className = 'mt-4 p-3 text-sm text-center rounded-md bg-red-100 text-red-700';
+                                    }
+                                    claimMessageDiv.classList.remove('hidden');
+                                } catch (claimError) {
+                                    console.error('Error submitting claim:', claimError);
+                                    document.getElementById('claimMessage').textContent = 'An error occurred while submitting claim.';
+                                    document.getElementById('claimMessage').className = 'mt-4 p-3 text-sm text-center rounded-md bg-red-100 text-red-700';
+                                    document.getElementById('claimMessage').classList.remove('hidden');
+                                }
+                            }
+                        });
+                    }
+
+                } else {
+                    errorMessage.textContent = data.message || 'Item details could not be loaded.';
+                    errorMessage.classList.remove('hidden');
+                    loadingMessage.classList.add('hidden');
+                }
+            } catch (error) {
+                console.error('Error fetching item details:', error);
+                errorMessage.textContent = 'An error occurred. Please try again.';
+                errorMessage.classList.remove('hidden');
+                loadingMessage.classList.add('hidden');
+            }
+        }
+
+        fetchItemDetails();
+    </script>
+</body>
+</html>

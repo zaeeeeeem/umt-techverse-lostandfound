@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat - Lost & Found Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 100px); /* Adjust height to fit within viewport, accounting for navbar */
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .messages-area {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0; /* gray-200 */
+            scroll-behavior: smooth; /* Smooth scrolling to new messages */
+        }
+        .message {
+            margin-bottom: 0.75rem;
+            display: flex;
+        }
+        .message-bubble {
+            max-width: 70%;
+            padding: 0.75rem 1rem;
+            border-radius: 1.25rem;
+            line-height: 1.4;
+        }
+        .message.sent {
+            justify-content: flex-end;
+        }
+        .message.received {
+            justify-content: flex-start;
+        }
+        .message.sent .message-bubble {
+            background-color: #4f46e5; /* indigo-600 */
+            color: white;
+            border-bottom-right-radius: 0.25rem; /* rounded-br-sm */
+        }
+        .message.received .message-bubble {
+            background-color: #e2e8f0; /* gray-200 */
+            color: #1a202c; /* gray-900 */
+            border-bottom-left-radius: 0.25rem; /* rounded-bl-sm */
+        }
+        .message-sender {
+            font-size: 0.75rem; /* text-xs */
+            color: #6b7280; /* gray-500 */
+            margin-bottom: 0.25rem;
+        }
+        .message.sent .message-sender {
+            text-align: right;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-900 font-sans">
+    <nav class="bg-indigo-600 p-4 shadow-md sticky top-0 z-10">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="user_dashboard.html" class="text-white text-2xl font-bold tracking-wide">UMT L&F Portal</a>
+            <div class="flex space-x-4 items-center">
+                <a href="lost_items.html" class="text-white hover:text-indigo-100 transition duration-150 py-2 px-3 rounded-md hover:bg-indigo-700">Lost Items</a>
+                <a href="found_items.html" class="text-white hover:text-indigo-100 transition duration-150 py-2 px-3 rounded-md hover:bg-indigo-700">Found Items</a>
+                <a href="post_lost.html" class="bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-2 px-4 rounded-md transition duration-150 shadow-sm">Report Lost</a>
+                <a href="post_found.html" class="bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-2 px-4 rounded-md transition duration-150 shadow-sm">Report Found</a>
+                <span id="userNameDisplay" class="text-white font-medium ml-4"></span>
+                <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md transition duration-150 shadow-sm">Logout</button>
+            </div>
+        </div>
+    </nav>
+    <main class="container mx-auto p-6 flex flex-col items-center justify-center min-h-screen-minus-navbar">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Chat with Finder/Claimer</h1>
+        <div id="chatWindow" class="chat-container w-full">
+            <div id="messagesArea" class="messages-area">
+                <p id="loadingMessages" class="text-center text-gray-500">Loading messages...</p>
+            </div>
+            <div class="input-area p-4 border-t border-gray-200 flex gap-2">
+                <input type="text" id="messageInput" placeholder="Type your message..."
+                       class="flex-grow px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-lg">
+                <button id="sendMessageBtn"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm transition duration-150">
+                    Send
+                </button>
+            </div>
+        </div>
+        <div id="chatMessage" class="mt-4 p-3 text-sm text-center rounded-md hidden"></div>
+    </main>
+
+    <script>
+        // Common Navbar JS (Copy from your other pages)
+        let currentUserId = null; 
+        async function checkSessionAndNavbar() {
+            try {
+                const response = await fetch('php/check_session.php');
+                const data = await response.json();
+                const userNameDisplay = document.getElementById('userNameDisplay');
+                const logoutBtn = document.getElementById('logoutBtn');
+                
+                if (data.loggedIn) {
+                    currentUserId = data.userId; // Store ID
+                    userNameDisplay.textContent = `Hello, ${data.userName}!`;
+                    logoutBtn.style.display = 'inline-block';
+                    initChat(); // Initialize chat only if logged in
+                } else {
+                    currentUserId = null;
+                    userNameDisplay.textContent = '';
+                    logoutBtn.style.display = 'none';
+                    // Redirect if not logged in AND not on login/register page
+                    if (!['login.html', 'register.html'].includes(window.location.pathname.split('/').pop())) {
+                        window.location.href = 'login.html'; 
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking session:', error);
+                if (!['login.html', 'register.html'].includes(window.location.pathname.split('/').pop())) {
+                    window.location.href = 'login.html';
+                }
+            }
+        }
+        checkSessionAndNavbar();
+
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            window.location.href = 'php/logout.php';
+        });
+
+        // Chat Specific JavaScript
+        let claimId = null;
+        let pollingInterval = null; // To store the interval ID for clearing
+
+        function initChat() {
+            const urlParams = new URLSearchParams(window.location.search);
+            claimId = urlParams.get('claim_id');
+
+            if (!claimId) {
+                document.getElementById('chatMessage').textContent = 'Error: No claim ID provided for chat.';
+                document.getElementById('chatMessage').className = 'mt-4 p-3 text-sm text-center rounded-md bg-red-100 text-red-700';
+                document.getElementById('chatMessage').classList.remove('hidden');
+                // Stop any polling if claimId is missing
+                if (pollingInterval) clearInterval(pollingInterval);
+                return;
+            }
+
+            // Clear existing interval if it was set (e.g., on re-initialization)
+            if (pollingInterval) clearInterval(pollingInterval);
+
+            // Initial load of messages
+            fetchMessages();
+
+            // Start polling for new messages (e.g., every 1.5 seconds)
+            pollingInterval = setInterval(fetchMessages, 1500); 
+
+            // Event listener for sending messages
+            document.getElementById('sendMessageBtn').addEventListener('click', sendMessage);
+            document.getElementById('messageInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault(); // Prevent default Enter key behavior (like new line)
+                    sendMessage();
+                }
+            });
+
+            // Clean up interval when navigating away (best practice)
+            window.addEventListener('beforeunload', () => {
+                if (pollingInterval) clearInterval(pollingInterval);
+            });
+        }
+
+        async function fetchMessages() {
+            const messagesArea = document.getElementById('messagesArea');
+            const loadingMessages = document.getElementById('loadingMessages');
+            // Show loading only on first load or if no messages. Hide if messages are present.
+            if (messagesArea.innerHTML.trim() === '' || messagesArea.innerHTML.trim() === '<p id="loadingMessages" class="text-center text-gray-500">Loading messages...</p>') {
+                 loadingMessages.classList.remove('hidden');
+            }
+
+
+            try {
+                const response = await fetch(`php/get_messages.php?claim_id=${claimId}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    messagesArea.innerHTML = ''; // Clear existing messages before re-rendering all
+                    data.messages.forEach(msg => {
+                        const messageElement = document.createElement('div');
+                        const isSent = msg.sender_id == currentUserId;
+                        messageElement.className = `message ${isSent ? 'sent' : 'received'}`;
+                        messageElement.innerHTML = `
+                            <div class="message-bubble">
+                                <div class="message-sender">${isSent ? 'You' : msg.sender_name}</div>
+                                ${msg.message_text}
+                                <div class="text-xs mt-1 text-gray-500 ${isSent ? 'text-right' : 'text-left'}">${new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                            </div>
+                        `;
+                        messagesArea.appendChild(messageElement);
+                    });
+                    // Only scroll if there are messages
+                    if (data.messages.length > 0) {
+                        messagesArea.scrollTop = messagesArea.scrollHeight; // Auto-scroll to bottom
+                    } else {
+                        messagesArea.innerHTML = `<p class="text-center text-gray-500">No messages yet. Start the conversation!</p>`;
+                    }
+                    
+                } else {
+                    messagesArea.innerHTML = `<p class="text-center text-red-500">${data.message || 'Failed to load messages.'}</p>`;
+                }
+            } catch (error) {
+                console.error('Error fetching messages:', error);
+                messagesArea.innerHTML = `<p class="text-center text-red-500">Error loading chat. Please refresh.</p>`;
+            } finally {
+                loadingMessages.classList.add('hidden'); // Ensure loading indicator is hidden
+            }
+        }
+
+        async function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const chatMessageDiv = document.getElementById('chatMessage');
+            const messageText = messageInput.value.trim();
+
+            if (!messageText) {
+                chatMessageDiv.textContent = 'Message cannot be empty.';
+                chatMessageDiv.className = 'mt-4 p-3 text-sm text-center rounded-md bg-red-100 text-red-700';
+                chatMessageDiv.classList.remove('hidden');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('claim_id', claimId);
+            formData.append('message_text', messageText);
+
+            try {
+                const response = await fetch('php/send_message.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    messageInput.value = ''; // Clear input
+                    fetchMessages(); // Reload messages to show new message
+                    chatMessageDiv.classList.add('hidden'); // Hide any previous error message
+                } else {
+                    chatMessageDiv.textContent = data.message;
+                    chatMessageDiv.className = 'mt-4 p-3 text-sm text-center rounded-md bg-red-100 text-red-700';
+                    chatMessageDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error sending message:', error);
+                chatMessageDiv.textContent = 'An error occurred while sending message.';
+                chatMessageDiv.className = 'mt-4 p-3 text-sm text-center rounded-md bg-red-100 text-red-700';
+                chatMessageDiv.classList.remove('hidden');
+            }
+        }
+    </script>
+</body>
+</html>

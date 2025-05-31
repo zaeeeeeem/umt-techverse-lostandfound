@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lost Items - UMT L&F Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-900 font-sans">
+    <nav class="bg-indigo-600 p-4 shadow-md sticky top-0 z-10">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="user_dashboard.html" class="text-white text-2xl font-bold tracking-wide">UMT L&F Portal</a>
+            <div class="flex space-x-4 items-center">
+                <a href="lost_items.html" class="text-white hover:text-indigo-100 transition duration-150 py-2 px-3 rounded-md hover:bg-indigo-700">Lost Items</a>
+                <a href="found_items.html" class="text-white hover:text-indigo-100 transition duration-150 py-2 px-3 rounded-md hover:bg-indigo-700">Found Items</a>
+                <a href="post_lost.html" class="bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-2 px-4 rounded-md transition duration-150 shadow-sm">Report Lost</a>
+                <a href="post_found.html" class="bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-2 px-4 rounded-md transition duration-150 shadow-sm">Report Found</a>
+                <span id="userNameDisplay" class="text-white font-medium ml-4"></span>
+                <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md transition duration-150 shadow-sm">Logout</button>
+            </div>
+        </div>
+    </nav>
+    <main class="container mx-auto p-6">
+        <h1 class="text-4xl font-extrabold text-gray-800 mb-8 text-center">Recently Lost Items</h1>
+
+        <div class="bg-white p-6 rounded-lg shadow-md mb-8 flex flex-wrap gap-4 items-center">
+            <input type="text" id="categoryFilter" placeholder="Filter by Category"
+                   class="flex-1 min-w-[150px] px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+            <input type="text" id="locationFilter" placeholder="Filter by Location"
+                   class="flex-1 min-w-[150px] px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+            <button id="applyFilterBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md shadow-sm transition duration-150">Apply Filters</button>
+            <button id="resetFilterBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-md shadow-sm transition duration-150">Reset Filters</button>
+        </div>
+
+        <div id="lostItemsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <p id="noItemsMessage" class="col-span-full text-center text-gray-600 text-lg hidden">No lost items found matching your criteria.</p>
+        </div>
+    </main>
+
+    <script>
+        async function checkSessionAndNavbar() {
+            try {
+                const response = await fetch('php/check_session.php');
+                const data = await response.json();
+                const userNameDisplay = document.getElementById('userNameDisplay');
+                const logoutBtn = document.getElementById('logoutBtn');
+                
+                if (data.loggedIn) {
+                    userNameDisplay.textContent = `Hello, ${data.userName}!`;
+                    logoutBtn.style.display = 'inline-block';
+                } else {
+                    userNameDisplay.textContent = '';
+                    logoutBtn.style.display = 'none';
+                    if (!['login.html', 'register.html'].includes(window.location.pathname.split('/').pop())) {
+                        window.location.href = 'login.html';
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking session:', error);
+                if (!['login.html', 'register.html'].includes(window.location.pathname.split('/').pop())) {
+                    window.location.href = 'login.html';
+                }
+            }
+        }
+        checkSessionAndNavbar();
+
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            window.location.href = 'php/logout.php';
+        });
+
+        // Item Listing Specific JavaScript
+        const itemsGrid = document.getElementById('lostItemsGrid');
+        const noItemsMessage = document.getElementById('noItemsMessage');
+        const categoryFilter = document.getElementById('categoryFilter');
+        const locationFilter = document.getElementById('locationFilter');
+        const applyFilterBtn = document.getElementById('applyFilterBtn');
+        const resetFilterBtn = document.getElementById('resetFilterBtn');
+
+        async function fetchLostItems() {
+            itemsGrid.innerHTML = ''; // Clear previous items
+            noItemsMessage.classList.add('hidden'); // Hide message initially
+
+            const category = categoryFilter.value.trim();
+            const location = locationFilter.value.trim();
+            
+            let url = 'php/get_items.php?type=lost';
+            if (category) url += `&category=${encodeURIComponent(category)}`;
+            if (location) url += `&location=${encodeURIComponent(location)}`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.success && data.items.length > 0) {
+                    data.items.forEach(item => {
+                        const itemCard = `
+                            <a href="item_detail.html?id=${item.id}" class="block bg-white rounded-lg shadow-md hover:shadow-xl transition duration-300 ease-in-out overflow-hidden">
+                                <img src="${item.image_url ? item.image_url : 'https://via.placeholder.com/400x300?text=No+Image'}" 
+                                     alt="${item.name}" class="w-full h-48 object-cover object-center">
+                                <div class="p-5">
+                                    <h3 class="text-xl font-semibold text-gray-800 mb-2">${item.name}</h3>
+                                    <p class="text-sm text-gray-600 mb-1"><strong>Category:</strong> ${item.category}</p>
+                                    <p class="text-sm text-gray-600 mb-1"><strong>Lost Location:</strong> ${item.location}</p>
+                                    <p class="text-sm text-gray-600 mb-1"><strong>Date Lost:</strong> ${item.date_lost_found}</p>
+                                    <p class="text-xs text-gray-500 mt-2">Posted by ${item.user_name} on ${new Date(item.created_at).toLocaleDateString()}</p>
+                                    ${item.status === 'claimed' ? '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 mt-2">Claimed</span>' : ''}
+                                    ${item.status === 'resolved' ? '<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 mt-2">Resolved</span>' : ''}
+                                </div>
+                            </a>
+                        `;
+                        itemsGrid.innerHTML += itemCard;
+                    });
+                } else {
+                    noItemsMessage.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error fetching lost items:', error);
+                noItemsMessage.textContent = 'Failed to load items. Please try again later.';
+                noItemsMessage.classList.remove('hidden');
+            }
+        }
+
+        // Initial fetch
+        fetchLostItems();
+
+        // Event listeners for filters
+        applyFilterBtn.addEventListener('click', fetchLostItems);
+        resetFilterBtn.addEventListener('click', () => {
+            categoryFilter.value = '';
+            locationFilter.value = '';
+            fetchLostItems();
+        });
+    </script>
+</body>
+</html>
