@@ -1,7 +1,7 @@
 # 🎒 Lost & Found Portal – UMT
 
 A web-based Lost & Found Portal designed to help students and staff at the University of Management and Technology (UMT) report, find, and claim lost items efficiently and securely.
-
+Competition Project @ University of Management and Sciences
 ---
 
 ## 🧩 Problem Statement
